@@ -15,3 +15,6 @@
  */
 
 package jvm_application_buildpack
+
+// JVMApplication indicates that an application runs on the JVM.
+const JVMApplication = "jvm-application"
