@@ -1,0 +1,1 @@
+package jvm_application_buildpack

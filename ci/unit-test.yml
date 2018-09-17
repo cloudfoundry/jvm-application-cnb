@@ -1,0 +1,17 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cfje/jvm-application-buildpack
+    tag: latest
+
+inputs:
+- name: jvm-application-buildpack
+
+caches:
+- path: go-build
+
+run:
+  path: jvm-application-buildpack/ci/unit-test.sh
