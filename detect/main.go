@@ -46,9 +46,9 @@ func main() {
 			jvm_application_buildpack.JVMApplication: libbuildpack.BuildPlanDependency{},
 			openjdk_buildpack.JREDependency: libbuildpack.BuildPlanDependency{
 				Metadata: libbuildpack.BuildPlanDependencyMetadata{
-					"version":                            "1.*",
 					openjdk_buildpack.LaunchContribution: true,
 				},
+				Version: "1.*",
 			},
 		})
 		return
