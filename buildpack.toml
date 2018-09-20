@@ -19,3 +19,14 @@ version = "1.0.0-BUILD-SNAPSHOT"
 
 [[stacks]]
 id = "io.buildpacks.stacks.bionic"
+
+[metadata]
+  pre_package = "ci/build.sh"
+  include_files = [
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "bin/build",
+    "bin/detect",
+    "buildpack.toml",
+  ]
