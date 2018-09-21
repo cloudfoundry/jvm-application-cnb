@@ -12,8 +12,11 @@ github.com/buildpack/libbuildpack v0.0.0-20180917215559-e0a1f1ae6c05 h1:2RADCCZG
 github.com/buildpack/libbuildpack v0.0.0-20180917215559-e0a1f1ae6c05/go.mod h1:8yCVTr9ZVay93VBZOqrJROhqMIA6UYT15KB85F1hyec=
 github.com/cloudfoundry/libjavabuildpack v0.0.0-20180921183210-714d6d40a4ca h1:UhEAD6A3yHeR9XYzkaK4bhRVma3nBNP03mEdxHq7jQQ=
 github.com/cloudfoundry/libjavabuildpack v0.0.0-20180921183210-714d6d40a4ca/go.mod h1:uycY5GlJpTka91uKUb3HehCqMiQW5ri2lOeURm5Tjk4=
+github.com/cloudfoundry/libjavabuildpack v0.0.0-20180921193157-e42458f4dcc7 h1:y+JzLnuuXvEhRLbVYuaiizifhkOCYBSTWOQP46sGDFQ=
+github.com/cloudfoundry/libjavabuildpack v0.0.0-20180921193157-e42458f4dcc7/go.mod h1:uycY5GlJpTka91uKUb3HehCqMiQW5ri2lOeURm5Tjk4=
 github.com/cloudfoundry/openjdk-buildpack v0.0.0-20180921183324-fd9865d447b4 h1:LVC3iK57ywktCKQ/jUbUC5mnsIr89JoPy8mo0eeNZJY=
 github.com/cloudfoundry/openjdk-buildpack v0.0.0-20180921183324-fd9865d447b4/go.mod h1:QpNAajTwK72PMbP/V10Ar665FgFsu7+wayLazH8qHyU=
+github.com/cloudfoundry/openjdk-buildpack v0.0.0-20180921193652-d4cc2dfe15ec/go.mod h1:meRofyxtFB7DlUMS72NbxKJkHZmKX+uluwtraUfKXhI=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fatih/color v1.7.0 h1:DkWD4oS2D8LGGgTQ6IvwJJXSL5Vp2ffcQg58nFV38Ys=
