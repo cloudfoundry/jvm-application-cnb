@@ -21,8 +21,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudfoundry/libjavabuildpack"
-	"github.com/cloudfoundry/libjavabuildpack/test"
+	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
+	"github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/cloudfoundry/libcfbuildpack/layers"
+	"github.com/cloudfoundry/libcfbuildpack/test"
+	"github.com/cloudfoundry/openjdk-buildpack/jre"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -34,35 +38,68 @@ func TestDetect(t *testing.T) {
 func testDetect(t *testing.T, when spec.G, it spec.S) {
 
 	it("fails without Main-Class", func() {
-		f := test.NewEnvironmentFactory(t)
-		defer f.Restore()
+		f := test.NewDetectFactory(t)
 
-		f.Console.In(t, "")
+		exitStatus, err := d(f.Detect)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-		main()
+		if exitStatus != detect.FailStatusCode {
+			t.Errorf("os.Exit = %d, expected 100", exitStatus)
+		}
+	})
 
-		if *f.ExitStatus != 100 {
-			t.Errorf("os.Exit = %d, expected 100", *f.ExitStatus)
+	it("passes with jvm-application", func() {
+		f := test.NewDetectFactory(t)
+		f.AddBuildPlan(t, jvmapplication.Dependency, buildplan.Dependency{})
+
+		exitStatus, err := d(f.Detect)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if exitStatus != detect.PassStatusCode {
+			t.Errorf("os.Exit = %d, expected 100", exitStatus)
+		}
+
+		if _, ok := f.Output[jvmapplication.Dependency]; !ok {
+			t.Errorf("os.Pass does not have jvm-application, expected it to")
+		}
+
+		if _, ok := f.Output[jre.Dependency]; !ok {
+			t.Errorf("os.Pass does not have openjdk-jre, expected it to")
 		}
 	})
 
 	it("passes with Main-Class", func() {
-		f := test.NewEnvironmentFactory(t)
-		defer f.Restore()
+		f := test.NewDetectFactory(t)
 
-		f.Console.In(t, "")
-
-		m := filepath.Join(f.Application, "META-INF", "MANIFEST.MF")
-
-		if err := libjavabuildpack.WriteToFile(strings.NewReader("Main-Class: test-class"), m, 0644); err != nil {
+		if err := layers.WriteToFile(strings.NewReader("Main-Class: test-class"), filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), 0644); err != nil {
 			t.Fatal(err)
 		}
 
-		main()
+		exitStatus, err := d(f.Detect)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-		if *f.ExitStatus != 0 {
-			t.Errorf("os.Exit = %d, expected 0", *f.ExitStatus)
+		if exitStatus != detect.PassStatusCode {
+			t.Errorf("os.Exit = %d, expected 100", exitStatus)
+		}
+
+		bp, ok := f.Output[jvmapplication.Dependency]
+
+		if !ok {
+			t.Errorf("os.Pass does not have jvm-application, expected it to")
+		}
+
+		if _, ok := bp.Metadata["main-class"]; !ok {
+			t.Errorf("os.Pass does not have main-class, expected it to")
+		}
+
+		if _, ok := f.Output[jre.Dependency]; !ok {
+			t.Errorf("os.Pass does not have openjdk-jre, expected it to")
 		}
 	})
 }
-

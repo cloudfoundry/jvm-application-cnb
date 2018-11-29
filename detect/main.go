@@ -20,40 +20,51 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/buildpack/libbuildpack"
-	"github.com/cloudfoundry/jvm-application-buildpack"
-	"github.com/cloudfoundry/libjavabuildpack"
-	"github.com/cloudfoundry/openjdk-buildpack"
+	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
+	"github.com/cloudfoundry/jvm-application-buildpack/mainclass"
+	detectPkg "github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/cloudfoundry/openjdk-buildpack/jre"
 )
 
 func main() {
-	detect, err := libjavabuildpack.DefaultDetect()
+	detect, err := detectPkg.DefaultDetect()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize Detect: %s\n", err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Detect: %s\n", err.Error())
 		os.Exit(101)
 	}
 
-	_, j := detect.BuildPlan[jvm_application_buildpack.JVMApplication]
+	if code, err := d(detect); err != nil {
+		detect.Logger.Info(err.Error())
+		os.Exit(code)
+	} else {
+		os.Exit(code)
+	}
+}
 
-	m, err := jvm_application_buildpack.HasMainClass(detect.Application, detect.Logger)
+func d(detect detectPkg.Detect) (int, error) {
+	_, j := detect.BuildPlan[jvmapplication.Dependency]
+
+	c, m, err := mainclass.GetMainClass(detect.Application, detect.Logger)
 	if err != nil {
-		detect.Error(102)
-		return
+		return detect.Error(102), err
 	}
 
 	if j || m {
-		detect.Pass(libbuildpack.BuildPlan{
-			jvm_application_buildpack.JVMApplication: libbuildpack.BuildPlanDependency{},
-			openjdk_buildpack.JREDependency: libbuildpack.BuildPlanDependency{
-				Metadata: libbuildpack.BuildPlanDependencyMetadata{
-					openjdk_buildpack.LaunchContribution: true,
-				},
-				Version: "1.*",
-			},
-		})
-		return
+		d := buildplan.Dependency{}
+
+		if m {
+			d.Metadata = buildplan.Metadata{mainclass.MainClassContribution: c}
+		}
+
+		bp := buildplan.BuildPlan{jvmapplication.Dependency: d}
+		bp[jre.Dependency] = buildplan.Dependency{
+			Metadata: buildplan.Metadata{jre.LaunchContribution: true},
+			Version:  "1.*",
+		}
+
+		return detect.Pass(bp)
 	}
 
-	detect.Fail()
-	return
+	return detect.Fail(), nil
 }

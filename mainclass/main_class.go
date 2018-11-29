@@ -14,23 +14,29 @@
  * limitations under the License.
  */
 
-package jvm_application_buildpack
+package mainclass
 
 import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/buildpack/libbuildpack"
-	"github.com/cloudfoundry/libjavabuildpack"
+	"github.com/buildpack/libbuildpack/application"
+	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
+	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/layers"
+	"github.com/cloudfoundry/libcfbuildpack/logger"
 	"github.com/magiconair/properties"
 )
 
+// MainClassContribution is a metadata key indicating the name of the Main-Class
+const MainClassContribution = "main-class"
+
 // MainClass represents the main class in a JVM application.
 type MainClass struct {
-	application libbuildpack.Application
-	launch      libjavabuildpack.Launch
-	logger      libjavabuildpack.Logger
+	application application.Application
 	class       string
+	layers      layers.Layers
+	logger      logger.Logger
 }
 
 // Contribute makes the contribution to launch
@@ -39,8 +45,8 @@ func (m MainClass) Contribute() error {
 
 	command := fmt.Sprintf("java -cp %s $JAVA_OPTS %s", m.application.Root, m.class)
 
-	return m.launch.WriteMetadata(libbuildpack.LaunchMetadata{
-		Processes: []libbuildpack.Process{
+	return m.layers.WriteMetadata(layers.Metadata{
+		Processes: []layers.Process{
 			{"web", command},
 			{"task", command},
 		},
@@ -49,53 +55,49 @@ func (m MainClass) Contribute() error {
 
 // String makes MainClass satisfy the Stringer interface.
 func (m MainClass) String() string {
-	return fmt.Sprintf("MainClass{ application: %s, launch: %s, logger: %s, class:%s }",
-		m.application, m.launch, m.logger, m.class)
+	return fmt.Sprintf("MainClass{ application: %s, class:%s, layers: %s, logger: %s }",
+		m.application, m.class, m.layers, m.logger)
 }
 
-// HasMainClass returns true if the application contains a META-INF/MANIFEST.MF file with a "Main-Class" key in it,
-// otherwise false.
-func HasMainClass(application libbuildpack.Application, logger libjavabuildpack.Logger) (bool, error) {
+// GetMainClass returns the "Main-Class" value in META-INF/MANIFEST.MF if it exists.
+func GetMainClass(application application.Application, logger logger.Logger) (string, bool, error) {
 	m, ok, err := newManifest(application, logger)
 	if err != nil {
-		return false, err
+		return "", false, err
 	}
 	if !ok {
-		return false, nil
+		return "", false, nil
 	}
 
-	_, ok = m.Get("Main-Class")
-	return ok, nil
+	mc, ok := m.Get("Main-Class")
+	return mc, ok, nil
 }
 
-// NewMainCallas creates a new MainClass instance.  OK is true if the application contains a META-INF/MANIFEST.MF file
-// with a "Main-Class" key in it.
-func NewMainClass(build libjavabuildpack.Build) (MainClass, bool, error) {
-	m, ok, err := newManifest(build.Application, build.Logger)
-	if err != nil {
-		return MainClass{}, false, err
-	}
+// NewMainClass creates a new MainClass instance.  OK is true if the build plan contains "jvm-application" dependency
+// with "main-class" metadata.
+func NewMainClass(build build.Build) (MainClass, bool, error) {
+	bp, ok := build.BuildPlan[jvmapplication.Dependency]
 	if !ok {
 		return MainClass{}, false, nil
 	}
 
-	c, ok := m.Get("Main-Class")
+	class, ok := bp.Metadata[MainClassContribution].(string)
 	if !ok {
 		return MainClass{}, false, nil
 	}
 
 	return MainClass{
 		build.Application,
-		build.Launch,
+		class,
+		build.Layers,
 		build.Logger,
-		c,
 	}, true, nil
 }
 
-func newManifest(application libbuildpack.Application, logger libjavabuildpack.Logger) (*properties.Properties, bool, error) {
+func newManifest(application application.Application, logger logger.Logger) (*properties.Properties, bool, error) {
 	manifest := filepath.Join(application.Root, "META-INF", "MANIFEST.MF")
 
-	exists, err := libjavabuildpack.FileExists(manifest)
+	exists, err := layers.FileExists(manifest)
 	if err != nil {
 		return nil, false, err
 	}

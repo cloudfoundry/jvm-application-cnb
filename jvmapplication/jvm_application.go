@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package jvm_application_buildpack
+package jvmapplication
 
 // JVMApplication indicates that an application runs on the JVM.
-const JVMApplication = "jvm-application"
+const Dependency = "jvm-application"
