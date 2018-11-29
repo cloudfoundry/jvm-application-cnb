@@ -20,30 +20,36 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cloudfoundry/jvm-application-buildpack"
-	"github.com/cloudfoundry/libjavabuildpack"
+	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/jvm-application-buildpack/mainclass"
+	buildPkg "github.com/cloudfoundry/libcfbuildpack/build"
 )
 
 func main() {
-	build, err := libjavabuildpack.DefaultBuild()
+	build, err := buildPkg.DefaultBuild()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize Build: %s\n", err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Detect: %s\n", err.Error())
 		os.Exit(101)
 	}
 
+	if code, err := b(build); err != nil {
+		build.Logger.Info(err.Error())
+		os.Exit(code)
+	} else {
+		os.Exit(code)
+	}
+}
+
+func b(build buildPkg.Build) (int, error) {
 	build.Logger.FirstLine(build.Logger.PrettyVersion(build.Buildpack))
 
-	if m, ok, err := jvm_application_buildpack.NewMainClass(build); err != nil {
-		build.Logger.Info(err.Error())
-		build.Failure(102)
-		return
+	if m, ok, err := mainclass.NewMainClass(build); err != nil {
+		return build.Failure(102), err
 	} else if ok {
 		if err = m.Contribute(); err != nil {
-			build.Logger.Info(err.Error())
-			build.Failure(103)
-			return
+			return build.Failure(103), err
 		}
 	}
 
-	build.Success()
+	return build.Success(buildplan.BuildPlan{})
 }
