@@ -50,25 +50,19 @@ func main() {
 func d(detect detectPkg.Detect) (int, error) {
 	_, j := detect.BuildPlan[jvmapplication.Dependency]
 
-	c, m, err := mainclass.GetMainClass(detect.Application, detect.Logger)
+	m, err := mainclass.HasMainClass(detect.Application, detect.Logger)
 	if err != nil {
 		return detect.Error(102), err
 	}
 
 	if j || m {
-		d := buildplan.Dependency{}
-
-		if m {
-			d.Metadata = buildplan.Metadata{mainclass.MainClassContribution: c}
-		}
-
-		bp := buildplan.BuildPlan{jvmapplication.Dependency: d}
-		bp[jre.Dependency] = buildplan.Dependency{
-			Metadata: buildplan.Metadata{jre.LaunchContribution: true},
-			Version:  "1.*",
-		}
-
-		return detect.Pass(bp)
+		return detect.Pass(buildplan.BuildPlan{
+			jvmapplication.Dependency: buildplan.Dependency{},
+			jre.Dependency: buildplan.Dependency{
+				Metadata: buildplan.Metadata{jre.LaunchContribution: true},
+				Version:  "1.*",
+			},
+		})
 	}
 
 	return detect.Fail(), nil

@@ -23,7 +23,6 @@ import (
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
-	"github.com/cloudfoundry/jvm-application-buildpack/mainclass"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
@@ -90,9 +89,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 		}
 
 		test.BeBuildPlanLike(t, f.Output, buildplan.BuildPlan{
-			jvmapplication.Dependency: buildplan.Dependency{
-				Metadata: buildplan.Metadata{mainclass.MainClassContribution: "test-class"},
-			},
+			jvmapplication.Dependency: buildplan.Dependency{},
 			jre.Dependency: buildplan.Dependency{
 				Metadata: buildplan.Metadata{jre.LaunchContribution: true},
 				Version:  "1.*",

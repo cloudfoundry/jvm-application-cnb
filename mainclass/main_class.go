@@ -21,15 +21,11 @@ import (
 	"path/filepath"
 
 	"github.com/buildpack/libbuildpack/application"
-	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/logger"
 	"github.com/magiconair/properties"
 )
-
-// MainClassContribution is a metadata key indicating the name of the Main-Class
-const MainClassContribution = "main-class"
 
 // MainClass represents the main class in a JVM application.
 type MainClass struct {
@@ -59,29 +55,33 @@ func (m MainClass) String() string {
 		m.application, m.class, m.layers, m.logger)
 }
 
-// GetMainClass returns the "Main-Class" value in META-INF/MANIFEST.MF if it exists.
-func GetMainClass(application application.Application, logger logger.Logger) (string, bool, error) {
+// HasMainClass returns true if the application contains a META-INF/MANIFEST.MF file with a "Main-Class" key in it,
+// otherwise false.
+func HasMainClass(application application.Application, logger logger.Logger) (bool, error) {
 	m, ok, err := newManifest(application, logger)
 	if err != nil {
-		return "", false, err
+		return false, err
 	}
 	if !ok {
-		return "", false, nil
+		return false, nil
 	}
 
-	mc, ok := m.Get("Main-Class")
-	return mc, ok, nil
+	_, ok = m.Get("Main-Class")
+	return ok, nil
 }
 
 // NewMainClass creates a new MainClass instance.  OK is true if the build plan contains "jvm-application" dependency
 // with "main-class" metadata.
 func NewMainClass(build build.Build) (MainClass, bool, error) {
-	bp, ok := build.BuildPlan[jvmapplication.Dependency]
+	m, ok, err := newManifest(build.Application, build.Logger)
+	if err != nil {
+		return MainClass{}, false, err
+	}
 	if !ok {
 		return MainClass{}, false, nil
 	}
 
-	class, ok := bp.Metadata[MainClassContribution].(string)
+	class, ok := m.Get("Main-Class")
 	if !ok {
 		return MainClass{}, false, nil
 	}

@@ -37,12 +37,12 @@ func TestMainClass(t *testing.T) {
 
 func testMainClass(t *testing.T, when spec.G, it spec.S) {
 
-	when("GetMainClass", func() {
+	when("HasMainClass", func() {
 
 		it("returns false when no manifest", func() {
 			f := test.NewDetectFactory(t)
 
-			_, ok, err := mainclass.GetMainClass(f.Detect.Application, f.Detect.Logger)
+			ok, err := mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -56,7 +56,7 @@ func testMainClass(t *testing.T, when spec.G, it spec.S) {
 			f := test.NewDetectFactory(t)
 			test.TouchFile(t, f.Detect.Application.Root, "META-INF", "MANIFEST.MF")
 
-			_, ok, err := mainclass.GetMainClass(f.Detect.Application, f.Detect.Logger)
+			ok, err := mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -73,13 +73,9 @@ func testMainClass(t *testing.T, when spec.G, it spec.S) {
 				t.Fatal(err)
 			}
 
-			class, ok, err := mainclass.GetMainClass(f.Detect.Application, f.Detect.Logger)
+			ok, err := mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)
 			if err != nil {
 				t.Fatal(err)
-			}
-
-			if class != "test-class" {
-				t.Errorf("GetMainClass = %s, expected test-class", class)
 			}
 
 			if !ok {
@@ -119,9 +115,11 @@ func testMainClass(t *testing.T, when spec.G, it spec.S) {
 
 		it("returns true when main-Class exists", func() {
 			f := test.NewBuildFactory(t)
-			f.AddBuildPlan(t, jvmapplication.Dependency, buildplan.Dependency{Metadata: buildplan.Metadata{
-				mainclass.MainClassContribution: "test-class",
-			}})
+			f.AddBuildPlan(t, jvmapplication.Dependency, buildplan.Dependency{})
+
+			if err := layers.WriteToFile(strings.NewReader("Main-Class: test-class"), filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), 0644); err != nil {
+				t.Fatal(err)
+			}
 
 			_, ok, err := mainclass.NewMainClass(f.Build)
 			if err != nil {
@@ -136,9 +134,11 @@ func testMainClass(t *testing.T, when spec.G, it spec.S) {
 
 	it("contributes command", func() {
 		f := test.NewBuildFactory(t)
-		f.AddBuildPlan(t, jvmapplication.Dependency, buildplan.Dependency{Metadata: buildplan.Metadata{
-			mainclass.MainClassContribution: "test-class",
-		}})
+		f.AddBuildPlan(t, jvmapplication.Dependency, buildplan.Dependency{})
+
+		if err := layers.WriteToFile(strings.NewReader("Main-Class: test-class"), filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		c, _, err := mainclass.NewMainClass(f.Build)
 		if err != nil {
