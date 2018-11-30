@@ -153,13 +153,13 @@ func testMainClass(t *testing.T, when spec.G, it spec.S) {
 			t.Fatal(err)
 		}
 
-		test.BeFileLike(t, filepath.Join(f.Build.Layers.Root, "launch.toml"), 0644, fmt.Sprintf(`[[processes]]
-  type = "web"
-  command = "java -cp %s $JAVA_OPTS test-class"
+		command := fmt.Sprintf("java -cp %s $JAVA_OPTS test-class", f.Build.Application.Root)
 
-[[processes]]
-  type = "task"
-  command = "java -cp %s $JAVA_OPTS test-class"
-`, f.Build.Application.Root, f.Build.Application.Root))
+		test.BeLaunchMetadataLike(t, f.Build.Layers, layers.Metadata{
+			Processes: []layers.Process{
+				{"web", command},
+				{"task", command},
+			},
+		})
 	})
 }
