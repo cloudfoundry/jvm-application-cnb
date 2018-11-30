@@ -23,6 +23,7 @@ import (
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
+	"github.com/cloudfoundry/jvm-application-buildpack/mainclass"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
@@ -63,13 +64,13 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 			t.Errorf("os.Exit = %d, expected 100", exitStatus)
 		}
 
-		if _, ok := f.Output[jvmapplication.Dependency]; !ok {
-			t.Errorf("os.Pass does not have jvm-application, expected it to")
-		}
-
-		if _, ok := f.Output[jre.Dependency]; !ok {
-			t.Errorf("os.Pass does not have openjdk-jre, expected it to")
-		}
+		test.BeBuildPlanLike(t, f.Output, buildplan.BuildPlan{
+			jvmapplication.Dependency: buildplan.Dependency{},
+			jre.Dependency: buildplan.Dependency{
+				Metadata: buildplan.Metadata{jre.LaunchContribution: true},
+				Version:  "1.*",
+			},
+		})
 	})
 
 	it("passes with Main-Class", func() {
@@ -88,18 +89,14 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 			t.Errorf("os.Exit = %d, expected 100", exitStatus)
 		}
 
-		bp, ok := f.Output[jvmapplication.Dependency]
-
-		if !ok {
-			t.Errorf("os.Pass does not have jvm-application, expected it to")
-		}
-
-		if _, ok := bp.Metadata["main-class"]; !ok {
-			t.Errorf("os.Pass does not have main-class, expected it to")
-		}
-
-		if _, ok := f.Output[jre.Dependency]; !ok {
-			t.Errorf("os.Pass does not have openjdk-jre, expected it to")
-		}
+		test.BeBuildPlanLike(t, f.Output, buildplan.BuildPlan{
+			jvmapplication.Dependency: buildplan.Dependency{
+				Metadata: buildplan.Metadata{mainclass.MainClassContribution: "test-class"},
+			},
+			jre.Dependency: buildplan.Dependency{
+				Metadata: buildplan.Metadata{jre.LaunchContribution: true},
+				Version:  "1.*",
+			},
+		})
 	})
 }

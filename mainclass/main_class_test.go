@@ -54,10 +54,7 @@ func testMainClass(t *testing.T, when spec.G, it spec.S) {
 
 		it("returns false when no Main-Class", func() {
 			f := test.NewDetectFactory(t)
-
-			if err := layers.WriteToFile(strings.NewReader(""), filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), 0644); err != nil {
-				t.Fatal(err)
-			}
+			test.TouchFile(t, f.Detect.Application.Root, "META-INF", "MANIFEST.MF")
 
 			_, ok, err := mainclass.GetMainClass(f.Detect.Application, f.Detect.Logger)
 			if err != nil {
@@ -122,7 +119,6 @@ func testMainClass(t *testing.T, when spec.G, it spec.S) {
 
 		it("returns true when main-Class exists", func() {
 			f := test.NewBuildFactory(t)
-
 			f.AddBuildPlan(t, jvmapplication.Dependency, buildplan.Dependency{Metadata: buildplan.Metadata{
 				mainclass.MainClassContribution: "test-class",
 			}})
