@@ -59,7 +59,7 @@ func d(detect detectPkg.Detect) (int, error) {
 		return detect.Pass(buildplan.BuildPlan{
 			jvmapplication.Dependency: buildplan.Dependency{},
 			jre.Dependency: buildplan.Dependency{
-				Metadata: buildplan.Metadata{jre.LaunchContribution: true}
+				Metadata: buildplan.Metadata{jre.LaunchContribution: true},
 			},
 		})
 	}
