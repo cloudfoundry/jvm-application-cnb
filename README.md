@@ -9,7 +9,6 @@ The detection phase passes if
 * `jvm-application` exists in the build plan
   * Contributes `openjdk-jre` to the build plan
   * Contributes `openjdk-jre.metadata.launch = true` to the build plan
-  * Contributes `openjdk-jre.version = 1.*` to the build plan
 
 ## Build
 If the build plan contains

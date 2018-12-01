@@ -67,7 +67,6 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 			jvmapplication.Dependency: buildplan.Dependency{},
 			jre.Dependency: buildplan.Dependency{
 				Metadata: buildplan.Metadata{jre.LaunchContribution: true},
-				Version:  "1.*",
 			},
 		})
 	})
@@ -92,8 +91,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 			jvmapplication.Dependency: buildplan.Dependency{},
 			jre.Dependency: buildplan.Dependency{
 				Metadata: buildplan.Metadata{jre.LaunchContribution: true},
-				Version:  "1.*",
-			},
+		  },
 		})
 	})
 }
