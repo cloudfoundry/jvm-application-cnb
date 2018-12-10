@@ -19,143 +19,104 @@ package mainclass_test
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 	"testing"
 
+	"github.com/BurntSushi/toml"
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
 	"github.com/cloudfoundry/jvm-application-buildpack/mainclass"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestMainClass(t *testing.T) {
-	spec.Run(t, "MainClass", testMainClass, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "MainClass", func(t *testing.T, when spec.G, it spec.S) {
 
-func testMainClass(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	when("HasMainClass", func() {
+		var f *test.BuildFactory
 
-		it("returns false when no manifest", func() {
-			f := test.NewDetectFactory(t)
-
-			ok, err := mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if ok {
-				t.Errorf("GetMainClass = %t, expected false", ok)
-			}
+		it.Before(func() {
+			f = test.NewBuildFactory(t)
 		})
 
-		it("returns false when no Main-Class", func() {
-			f := test.NewDetectFactory(t)
-			test.TouchFile(t, f.Detect.Application.Root, "META-INF", "MANIFEST.MF")
+		when("HasMainClass", func() {
 
-			ok, err := mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)
-			if err != nil {
-				t.Fatal(err)
-			}
+			var f *test.DetectFactory
 
-			if ok {
-				t.Errorf("GetMainClass = %t, expected false", ok)
-			}
+			it.Before(func() {
+				f = test.NewDetectFactory(t)
+			})
+
+			it("returns false when no manifest", func() {
+				g.Expect(mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)).To(BeFalse())
+			})
+
+			it("returns false when no Main-Class", func() {
+				test.TouchFile(t, f.Detect.Application.Root, "META-INF", "MANIFEST.MF")
+
+				g.Expect(mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)).To(BeFalse())
+			})
+
+			it("returns true when Main-Class exists", func() {
+				test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
+
+				g.Expect(mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)).To(BeTrue())
+			})
 		})
 
-		it("returns true when Main-Class exists", func() {
-			f := test.NewDetectFactory(t)
+		when("NewMainClass", func() {
 
-			if err := layers.WriteToFile(strings.NewReader("Main-Class: test-class"), filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), 0644); err != nil {
-				t.Fatal(err)
-			}
+			it("returns false when no jvm-application", func() {
+				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
-			ok, err := mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)
-			if err != nil {
-				t.Fatal(err)
-			}
+				_, ok, err := mainclass.NewMainClass(f.Build)
+				g.Expect(ok).To(BeFalse())
+				g.Expect(err).NotTo(HaveOccurred())
+			})
 
-			if !ok {
-				t.Errorf("GetMainClass = %t, expected true", ok)
-			}
-		})
-	})
+			it("returns false when no main-Class", func() {
+				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
 
-	when("NewMainClass", func() {
+				_, ok, err := mainclass.NewMainClass(f.Build)
+				g.Expect(ok).To(BeFalse())
+				g.Expect(err).NotTo(HaveOccurred())
+			})
 
-		it("returns false when no jvm-application", func() {
-			f := test.NewBuildFactory(t)
+			it("returns true when main-Class exists", func() {
+				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
+				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
-			_, ok, err := mainclass.NewMainClass(f.Build)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if ok {
-				t.Errorf("NewMainClass = %t, expected false", ok)
-			}
+				_, ok, err := mainclass.NewMainClass(f.Build)
+				g.Expect(ok).To(BeTrue())
+				g.Expect(err).NotTo(HaveOccurred())
+			})
 		})
 
-		it("returns false when no main-Class", func() {
-			f := test.NewBuildFactory(t)
-			f.AddBuildPlan(t, jvmapplication.Dependency, buildplan.Dependency{})
+		it("contributes command", func() {
+			f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
+			test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
-			_, ok, err := mainclass.NewMainClass(f.Build)
-			if err != nil {
-				t.Fatal(err)
-			}
+			c, _, err := mainclass.NewMainClass(f.Build)
+			g.Expect(err).NotTo(HaveOccurred())
 
-			if ok {
-				t.Errorf("NewMainClass = %t, expected false", ok)
-			}
+			g.Expect(c.Contribute()).To(Succeed())
+
+			command := fmt.Sprintf("java -cp %s $JAVA_OPTS test-class", f.Build.Application.Root)
+
+			path := filepath.Join(f.Build.Layers.Root, "launch.toml")
+			var metadata layers.Metadata
+			toml.DecodeFile(path, &metadata)
+
+			g.Expect(f.Build.Layers).To(test.HaveLaunchMetadata(layers.Metadata{
+				Processes: []layers.Process{
+					{"web", command},
+					{"task", command},
+				},
+			}))
 		})
-
-		it("returns true when main-Class exists", func() {
-			f := test.NewBuildFactory(t)
-			f.AddBuildPlan(t, jvmapplication.Dependency, buildplan.Dependency{})
-
-			if err := layers.WriteToFile(strings.NewReader("Main-Class: test-class"), filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), 0644); err != nil {
-				t.Fatal(err)
-			}
-
-			_, ok, err := mainclass.NewMainClass(f.Build)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if !ok {
-				t.Errorf("NewMainClass = %t, expected true", ok)
-			}
-		})
-	})
-
-	it("contributes command", func() {
-		f := test.NewBuildFactory(t)
-		f.AddBuildPlan(t, jvmapplication.Dependency, buildplan.Dependency{})
-
-		if err := layers.WriteToFile(strings.NewReader("Main-Class: test-class"), filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), 0644); err != nil {
-			t.Fatal(err)
-		}
-
-		c, _, err := mainclass.NewMainClass(f.Build)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if err := c.Contribute(); err != nil {
-			t.Fatal(err)
-		}
-
-		command := fmt.Sprintf("java -cp %s $JAVA_OPTS test-class", f.Build.Application.Root)
-
-		test.BeLaunchMetadataLike(t, f.Build.Layers, layers.Metadata{
-			Processes: []layers.Process{
-				{"web", command},
-				{"task", command},
-			},
-		})
-	})
+	}, spec.Report(report.Terminal{}))
 }

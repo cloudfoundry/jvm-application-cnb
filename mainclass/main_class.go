@@ -21,7 +21,9 @@ import (
 	"path/filepath"
 
 	"github.com/buildpack/libbuildpack/application"
+	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/helper"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/logger"
 	"github.com/magiconair/properties"
@@ -73,6 +75,11 @@ func HasMainClass(application application.Application, logger logger.Logger) (bo
 // NewMainClass creates a new MainClass instance.  OK is true if the build plan contains "jvm-application" dependency
 // with "main-class" metadata.
 func NewMainClass(build build.Build) (MainClass, bool, error) {
+	_, ok := build.BuildPlan[jvmapplication.Dependency]
+	if !ok {
+		return MainClass{}, false, nil
+	}
+
 	m, ok, err := newManifest(build.Application, build.Logger)
 	if err != nil {
 		return MainClass{}, false, err
@@ -97,7 +104,7 @@ func NewMainClass(build build.Build) (MainClass, bool, error) {
 func newManifest(application application.Application, logger logger.Logger) (*properties.Properties, bool, error) {
 	manifest := filepath.Join(application.Root, "META-INF", "MANIFEST.MF")
 
-	exists, err := layers.FileExists(manifest)
+	exists, err := helper.FileExists(manifest)
 	if err != nil {
 		return nil, false, err
 	}
