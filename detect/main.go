@@ -23,12 +23,12 @@ import (
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
 	"github.com/cloudfoundry/jvm-application-buildpack/mainclass"
-	detectPkg "github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/openjdk-buildpack/jre"
 )
 
 func main() {
-	detect, err := detectPkg.DefaultDetect()
+	detect, err := detect.DefaultDetect()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Detect: %s\n", err)
 		os.Exit(101)
@@ -47,7 +47,7 @@ func main() {
 	}
 }
 
-func d(detect detectPkg.Detect) (int, error) {
+func d(detect detect.Detect) (int, error) {
 	_, dep := detect.BuildPlan[jvmapplication.Dependency]
 
 	mc, err := mainclass.HasMainClass(detect.Application, detect.Logger)

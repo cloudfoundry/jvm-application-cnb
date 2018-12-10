@@ -22,11 +22,11 @@ import (
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-buildpack/mainclass"
-	buildPkg "github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/build"
 )
 
 func main() {
-	build, err := buildPkg.DefaultBuild()
+	build, err := build.DefaultBuild()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Detect: %s\n", err)
 		os.Exit(101)
@@ -40,7 +40,7 @@ func main() {
 	}
 }
 
-func b(build buildPkg.Build) (int, error) {
+func b(build build.Build) (int, error) {
 	build.Logger.FirstLine(build.Logger.PrettyIdentity(build.Buildpack))
 
 	if m, ok, err := mainclass.NewMainClass(build); err != nil {
