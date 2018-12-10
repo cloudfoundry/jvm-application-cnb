@@ -48,14 +48,14 @@ func main() {
 }
 
 func d(detect detectPkg.Detect) (int, error) {
-	_, j := detect.BuildPlan[jvmapplication.Dependency]
+	_, dep := detect.BuildPlan[jvmapplication.Dependency]
 
-	m, err := mainclass.HasMainClass(detect.Application, detect.Logger)
+	mc, err := mainclass.HasMainClass(detect.Application, detect.Logger)
 	if err != nil {
 		return detect.Error(102), err
 	}
 
-	if j || m {
+	if dep || mc {
 		return detect.Pass(buildplan.BuildPlan{
 			jvmapplication.Dependency: buildplan.Dependency{},
 			jre.Dependency: buildplan.Dependency{

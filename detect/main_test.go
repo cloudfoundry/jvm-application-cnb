@@ -18,80 +18,55 @@ package main
 
 import (
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
-	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	"github.com/cloudfoundry/openjdk-buildpack/jre"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestDetect(t *testing.T) {
-	spec.Run(t, "Detect", testDetect, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "Detect", func(t *testing.T, _ spec.G, it spec.S) {
 
-func testDetect(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	it("fails without Main-Class", func() {
-		f := test.NewDetectFactory(t)
+		var f *test.DetectFactory
 
-		exitStatus, err := d(f.Detect)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if exitStatus != detect.FailStatusCode {
-			t.Errorf("os.Exit = %d, expected 100", exitStatus)
-		}
-	})
-
-	it("passes with jvm-application", func() {
-		f := test.NewDetectFactory(t)
-		f.AddBuildPlan(t, jvmapplication.Dependency, buildplan.Dependency{})
-
-		exitStatus, err := d(f.Detect)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if exitStatus != detect.PassStatusCode {
-			t.Errorf("os.Exit = %d, expected 100", exitStatus)
-		}
-
-		test.BeBuildPlanLike(t, f.Output, buildplan.BuildPlan{
-			jvmapplication.Dependency: buildplan.Dependency{},
-			jre.Dependency: buildplan.Dependency{
-				Metadata: buildplan.Metadata{jre.LaunchContribution: true},
-			},
+		it.Before(func() {
+			f = test.NewDetectFactory(t)
 		})
-	})
 
-	it("passes with Main-Class", func() {
-		f := test.NewDetectFactory(t)
-
-		if err := layers.WriteToFile(strings.NewReader("Main-Class: test-class"), filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), 0644); err != nil {
-			t.Fatal(err)
-		}
-
-		exitStatus, err := d(f.Detect)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if exitStatus != detect.PassStatusCode {
-			t.Errorf("os.Exit = %d, expected 100", exitStatus)
-		}
-
-		test.BeBuildPlanLike(t, f.Output, buildplan.BuildPlan{
-			jvmapplication.Dependency: buildplan.Dependency{},
-			jre.Dependency: buildplan.Dependency{
-				Metadata: buildplan.Metadata{jre.LaunchContribution: true},
-		  },
+		it("fails without Main-Class", func() {
+			g.Expect(d(f.Detect)).To(Equal(detect.FailStatusCode))
 		})
-	})
+
+		it("passes with jvm-application", func() {
+			f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
+
+			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
+			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
+				jvmapplication.Dependency: buildplan.Dependency{},
+				jre.Dependency: buildplan.Dependency{
+					Metadata: buildplan.Metadata{jre.LaunchContribution: true},
+				},
+			}))
+		})
+
+		it("passes with Main-Class", func() {
+			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
+
+			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
+			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
+				jvmapplication.Dependency: buildplan.Dependency{},
+				jre.Dependency: buildplan.Dependency{
+					Metadata: buildplan.Metadata{jre.LaunchContribution: true},
+				},
+			}))
+		})
+	}, spec.Report(report.Terminal{}))
 }
