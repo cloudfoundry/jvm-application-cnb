@@ -56,13 +56,23 @@ func d(detect detect.Detect) (int, error) {
 	}
 
 	if dep || mc {
-		return detect.Pass(buildplan.BuildPlan{
-			jvmapplication.Dependency: buildplan.Dependency{},
-			jre.Dependency: buildplan.Dependency{
-				Metadata: buildplan.Metadata{jre.LaunchContribution: true},
-			},
-		})
+		return detect.Pass(buildPlanContribution(detect.BuildPlan))
 	}
 
 	return detect.Fail(), nil
+}
+
+func buildPlanContribution(buildPlan buildplan.BuildPlan) buildplan.BuildPlan {
+	dep := buildPlan[jre.Dependency]
+
+	if dep.Metadata == nil {
+		dep.Metadata = make(buildplan.Metadata)
+	}
+
+	dep.Metadata[jre.LaunchContribution] = true
+
+	return buildplan.BuildPlan{
+		jvmapplication.Dependency: buildPlan[jvmapplication.Dependency],
+		jre.Dependency:            dep,
+	}
 }
