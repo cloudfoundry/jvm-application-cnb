@@ -2,16 +2,12 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Masterminds/semver v1.4.2 h1:WBLTQ37jOCzSLtXNdoo8bNM8876KhNqOKvrlGITgsTc=
 github.com/Masterminds/semver v1.4.2/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
-github.com/buildpack/libbuildpack v1.8.0 h1:m7Pxgw9NkNXV34yh0EHAX9d1Pdnbl6AW+eH4ARDsb1I=
-github.com/buildpack/libbuildpack v1.8.0/go.mod h1:5YC4KNbppjwmsX561s0rS+4rtuJA++AnzUvcKc6lexc=
 github.com/buildpack/libbuildpack v1.10.0 h1:xwgXTulLRU2zCFbYy35azMsHOjy8uQVyw9xm88Xm2b8=
 github.com/buildpack/libbuildpack v1.10.0/go.mod h1:5YC4KNbppjwmsX561s0rS+4rtuJA++AnzUvcKc6lexc=
-github.com/cloudfoundry/libcfbuildpack v1.37.0 h1:/jeSWneCY2QD0n91OgaEHJrv9FUTZV+uoorSAdPg0Ik=
-github.com/cloudfoundry/libcfbuildpack v1.37.0/go.mod h1:WqW/cPLKqNnxhBt0JLTCQGpcKlFfC1T6vLHg0gNRtAA=
 github.com/cloudfoundry/libcfbuildpack v1.39.0 h1:92zMZVVW01ngFU9K9ShfQV5CM8oWXhVSiuutQlgh3EE=
 github.com/cloudfoundry/libcfbuildpack v1.39.0/go.mod h1:Wvxw5gAH7g+EdHaD5CxoXrHtviPE8IO4KsLt2hWgY3Y=
-github.com/cloudfoundry/openjdk-buildpack v1.0.0-M4 h1:iPlIKY5TExCtfsnLpezH5pI0xNd6SIbDFZekJBkU/dw=
-github.com/cloudfoundry/openjdk-buildpack v1.0.0-M4/go.mod h1:PytA67ZihJZEgzLdCcq7qsg18NgZEFC9ZDIbC2ugvhs=
+github.com/cloudfoundry/openjdk-buildpack v1.0.0-M5 h1:fs7tIQtYFwcZD58f0840PR3dsdbjXgzRXKCQ22+XYJo=
+github.com/cloudfoundry/openjdk-buildpack v1.0.0-M5/go.mod h1:aX4RF5HF3txooMneRxqcLRA/TNmL5Tmwk/wvEvORZB8=
 github.com/fatih/color v1.7.0 h1:DkWD4oS2D8LGGgTQ6IvwJJXSL5Vp2ffcQg58nFV38Ys=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
@@ -53,6 +49,8 @@ golang.org/x/sys v0.0.0-20190102155601-82a175fd1598 h1:S8GOgffXV1X3fpVG442QRfWOt
 golang.org/x/sys v0.0.0-20190102155601-82a175fd1598/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190129075346-302c3dd5f1cc h1:WiYx1rIFmx8c0mXAFtv5D/mHyKe1+jmuP7PViuwqwuQ=
 golang.org/x/sys v0.0.0-20190129075346-302c3dd5f1cc/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/sys v0.0.0-20190130150945-aca44879d564 h1:o6ENHFwwr1TZ9CUPQcfo1HGvLP1OPsPOTB7xCIOPNmU=
+golang.org/x/sys v0.0.0-20190130150945-aca44879d564/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
