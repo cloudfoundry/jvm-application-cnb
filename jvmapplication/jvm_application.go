@@ -16,5 +16,5 @@
 
 package jvmapplication
 
-// JVMApplication indicates that an application runs on the JVM.
+// Dependency indicates that an application runs on the JVM.
 const Dependency = "jvm-application"

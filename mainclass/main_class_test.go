@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/BurntSushi/toml"
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
 	"github.com/cloudfoundry/jvm-application-buildpack/mainclass"
@@ -106,10 +105,6 @@ func TestMainClass(t *testing.T) {
 			g.Expect(c.Contribute()).To(Succeed())
 
 			command := fmt.Sprintf("java -cp %s $JAVA_OPTS test-class", f.Build.Application.Root)
-
-			path := filepath.Join(f.Build.Layers.Root, "launch.toml")
-			var metadata layers.Metadata
-			toml.DecodeFile(path, &metadata)
 
 			g.Expect(f.Build.Layers).To(test.HaveLaunchMetadata(layers.Metadata{
 				Processes: []layers.Process{
