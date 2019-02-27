@@ -106,10 +106,10 @@ func TestMainClass(t *testing.T) {
 
 			command := fmt.Sprintf("java -cp %s $JAVA_OPTS test-class", f.Build.Application.Root)
 
-			g.Expect(f.Build.Layers).To(test.HaveLaunchMetadata(layers.Metadata{
+			g.Expect(f.Build.Layers).To(test.HaveApplicationMetadata(layers.Metadata{
 				Processes: []layers.Process{
-					{"web", command},
 					{"task", command},
+					{"web", command},
 				},
 			}))
 		})
