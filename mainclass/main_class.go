@@ -44,7 +44,7 @@ func (m MainClass) Contribute() error {
 	command := fmt.Sprintf("java -cp %s $JAVA_OPTS %s", m.application.Root, m.class)
 
 	return m.layers.WriteApplicationMetadata(layers.Metadata{
-		Processes: []layers.Process{
+		Processes: layers.Processes{
 			{"web", command},
 			{"task", command},
 		},
