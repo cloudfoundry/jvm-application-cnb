@@ -22,8 +22,8 @@ import (
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/jvm-application-buildpack/jvmapplication"
-	"github.com/cloudfoundry/jvm-application-buildpack/mainclass"
+	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
+	"github.com/cloudfoundry/jvm-application-cnb/mainclass"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	. "github.com/onsi/gomega"

@@ -8,7 +8,7 @@ image_resource:
     tag: latest
 
 inputs:
-- name: jvm-application-buildpack
+- name: jvm-application-cnb
 
 outputs:
 - name: artifactory
@@ -17,4 +17,4 @@ caches:
 - path: go-module-cache
 
 run:
-  path: jvm-application-buildpack/ci/package.sh
+  path: jvm-application-cnb/ci/package.sh

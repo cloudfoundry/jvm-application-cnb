@@ -8,10 +8,10 @@ image_resource:
     tag: latest
 
 inputs:
-- name: jvm-application-buildpack
+- name: jvm-application-cnb
 
 caches:
 - path: go-module-cache
 
 run:
-  path: jvm-application-buildpack/ci/unit-test.sh
+  path: jvm-application-cnb/ci/unit-test.sh

@@ -21,7 +21,7 @@ import (
 	"os"
 
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/jvm-application-buildpack/mainclass"
+	"github.com/cloudfoundry/jvm-application-cnb/mainclass"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 )
 

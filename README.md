@@ -1,4 +1,4 @@
-# `jvm-application-buildpack`
+# `jvm-application-cnb`
 The Cloud Foundry JVM Application Buildpack is a Cloud Native Buildpack V3 that enables the running of JVM applications.
 
 This buildpack is designed to work in collaboration with other buildpacks.
