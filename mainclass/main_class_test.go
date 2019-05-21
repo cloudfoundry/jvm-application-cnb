@@ -17,7 +17,6 @@
 package mainclass_test
 
 import (
-	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -104,8 +103,12 @@ func TestMainClass(t *testing.T) {
 
 			g.Expect(c.Contribute()).To(Succeed())
 
-			command := fmt.Sprintf("java -cp %s $JAVA_OPTS test-class", f.Build.Application.Root)
 
+			layer := f.Build.Layers.Layer("main-class")
+			g.Expect(layer).To(test.HaveLayerMetadata(false, false, true))
+			g.Expect(layer).To(test.HaveAppendPathLaunchEnvironment("CLASSPATH", f.Build.Application.Root))
+
+			command := "java -cp $CLASSPATH $JAVA_OPTS test-class"
 			g.Expect(f.Build.Layers).To(test.HaveApplicationMetadata(layers.Metadata{
 				Processes: []layers.Process{
 					{"task", command},

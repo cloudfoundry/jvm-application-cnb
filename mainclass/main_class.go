@@ -33,15 +33,20 @@ import (
 type MainClass struct {
 	application application.Application
 	class       string
+	layer       layers.Layer
 	layers      layers.Layers
 	logger      logger.Logger
 }
 
 // Contribute makes the contribution to launch
 func (m MainClass) Contribute() error {
-	m.logger.FirstLine("Configuring Java Main Application")
+	if err := m.layer.Contribute(marker(m.application.Root), func(layer layers.Layer) error {
+		return layer.AppendPathLaunchEnv("CLASSPATH", m.application.Root)
+	}, layers.Launch); err != nil {
+		return err
+	}
 
-	command := fmt.Sprintf("java -cp %s $JAVA_OPTS %s", m.application.Root, m.class)
+	command := fmt.Sprintf("java -cp $CLASSPATH $JAVA_OPTS %s", m.class)
 
 	return m.layers.WriteApplicationMetadata(layers.Metadata{
 		Processes: layers.Processes{
@@ -96,6 +101,7 @@ func NewMainClass(build build.Build) (MainClass, bool, error) {
 	return MainClass{
 		build.Application,
 		class,
+		build.Layers.Layer("main-class"),
 		build.Layers,
 		build.Logger,
 	}, true, nil
@@ -120,4 +126,10 @@ func newManifest(application application.Application, logger logger.Logger) (*pr
 
 	logger.Debug("Manifest: %s", p)
 	return p, true, nil
+}
+
+type marker string
+
+func (m marker) Identity() (string, string) {
+	return "Main-Class Classpath", ""
 }
