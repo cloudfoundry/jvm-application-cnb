@@ -20,11 +20,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/jvm-application-cnb/executablejar"
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
-	"github.com/cloudfoundry/jvm-application-cnb/mainclass"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
-	"github.com/cloudfoundry/openjdk-cnb/jre"
+	"github.com/cloudfoundry/libcfbuildpack/manifest"
 )
 
 func main() {
@@ -48,31 +47,18 @@ func main() {
 }
 
 func d(detect detect.Detect) (int, error) {
-	_, dep := detect.BuildPlan[jvmapplication.Dependency]
-
-	mc, err := mainclass.HasMainClass(detect.Application, detect.Logger)
+	m, err := manifest.NewManifest(detect.Application, detect.Logger)
 	if err != nil {
 		return detect.Error(102), err
 	}
 
-	if dep || mc {
-		return detect.Pass(buildPlanContribution(detect.BuildPlan))
+	if e, ok := executablejar.NewMetadata(m); ok {
+		return detect.Pass(e.BuildPlan(detect.BuildPlan))
+	}
+
+	if _, ok := detect.BuildPlan[jvmapplication.Dependency]; ok {
+		return detect.Pass(jvmapplication.Metadata{}.BuildPlan(detect.BuildPlan))
 	}
 
 	return detect.Fail(), nil
-}
-
-func buildPlanContribution(buildPlan buildplan.BuildPlan) buildplan.BuildPlan {
-	dep := buildPlan[jre.Dependency]
-
-	if dep.Metadata == nil {
-		dep.Metadata = make(buildplan.Metadata)
-	}
-
-	dep.Metadata[jre.LaunchContribution] = true
-
-	return buildplan.BuildPlan{
-		jvmapplication.Dependency: buildPlan[jvmapplication.Dependency],
-		jre.Dependency:            dep,
-	}
 }

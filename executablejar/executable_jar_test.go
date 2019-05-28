@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package mainclass_test
+package executablejar_test
 
 import (
 	"path/filepath"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/jvm-application-cnb/executablejar"
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
-	"github.com/cloudfoundry/jvm-application-cnb/mainclass"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	. "github.com/onsi/gomega"
@@ -30,8 +30,8 @@ import (
 	"github.com/sclevine/spec/report"
 )
 
-func TestMainClass(t *testing.T) {
-	spec.Run(t, "MainClass", func(t *testing.T, when spec.G, it spec.S) {
+func TestExecutableJAR(t *testing.T) {
+	spec.Run(t, "ExecutableJAR", func(t *testing.T, when spec.G, it spec.S) {
 
 		g := NewGomegaWithT(t)
 
@@ -41,45 +41,32 @@ func TestMainClass(t *testing.T) {
 			f = test.NewBuildFactory(t)
 		})
 
-		when("HasMainClass", func() {
-
-			var f *test.DetectFactory
-
-			it.Before(func() {
-				f = test.NewDetectFactory(t)
-			})
-
-			it("returns false when no manifest", func() {
-				g.Expect(mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)).To(BeFalse())
-			})
-
-			it("returns false when no Main-Class", func() {
-				test.TouchFile(t, f.Detect.Application.Root, "META-INF", "MANIFEST.MF")
-
-				g.Expect(mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)).To(BeFalse())
-			})
-
-			it("returns true when Main-Class exists", func() {
-				test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
-
-				g.Expect(mainclass.HasMainClass(f.Detect.Application, f.Detect.Logger)).To(BeTrue())
-			})
-		})
-
-		when("NewMainClass", func() {
+		when("NewExecutableJAR", func() {
 
 			it("returns false when no jvm-application", func() {
 				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
-				_, ok, err := mainclass.NewMainClass(f.Build)
+				_, ok, err := executablejar.NewExecutableJAR(f.Build)
 				g.Expect(ok).To(BeFalse())
 				g.Expect(err).NotTo(HaveOccurred())
 			})
 
-			it("returns false when no main-Class", func() {
+			it("returns true with executable-jar dependency", func() {
 				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
+				f.AddBuildPlan(executablejar.Dependency, buildplan.Dependency{
+					Metadata: buildplan.Metadata{executablejar.MainClass: "test-class"},
+				})
 
-				_, ok, err := mainclass.NewMainClass(f.Build)
+				_, ok, err := executablejar.NewExecutableJAR(f.Build)
+				g.Expect(ok).To(BeTrue())
+				g.Expect(err).NotTo(HaveOccurred())
+			})
+
+			it("returns false when no Main-Class", func() {
+				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
+				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "")
+
+				_, ok, err := executablejar.NewExecutableJAR(f.Build)
 				g.Expect(ok).To(BeFalse())
 				g.Expect(err).NotTo(HaveOccurred())
 			})
@@ -88,7 +75,7 @@ func TestMainClass(t *testing.T) {
 				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
 				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
-				_, ok, err := mainclass.NewMainClass(f.Build)
+				_, ok, err := executablejar.NewExecutableJAR(f.Build)
 				g.Expect(ok).To(BeTrue())
 				g.Expect(err).NotTo(HaveOccurred())
 			})
@@ -96,21 +83,23 @@ func TestMainClass(t *testing.T) {
 
 		it("contributes command", func() {
 			f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
-			test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
+			f.AddBuildPlan(executablejar.Dependency, buildplan.Dependency{
+				Metadata: buildplan.Metadata{executablejar.MainClass: "test-class"},
+			})
 
-			c, _, err := mainclass.NewMainClass(f.Build)
+			e, _, err := executablejar.NewExecutableJAR(f.Build)
 			g.Expect(err).NotTo(HaveOccurred())
 
-			g.Expect(c.Contribute()).To(Succeed())
+			g.Expect(e.Contribute()).To(Succeed())
 
-
-			layer := f.Build.Layers.Layer("main-class")
-			g.Expect(layer).To(test.HaveLayerMetadata(false, false, true))
-			g.Expect(layer).To(test.HaveAppendPathLaunchEnvironment("CLASSPATH", f.Build.Application.Root))
+			layer := f.Build.Layers.Layer("executable-jar")
+			g.Expect(layer).To(test.HaveLayerMetadata(true, true, true))
+			g.Expect(layer).To(test.HaveAppendPathSharedEnvironment("CLASSPATH", f.Build.Application.Root))
 
 			command := "java -cp $CLASSPATH $JAVA_OPTS test-class"
 			g.Expect(f.Build.Layers).To(test.HaveApplicationMetadata(layers.Metadata{
 				Processes: []layers.Process{
+					{"executable-jar", command},
 					{"task", command},
 					{"web", command},
 				},

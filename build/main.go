@@ -21,7 +21,7 @@ import (
 	"os"
 
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/jvm-application-cnb/mainclass"
+	"github.com/cloudfoundry/jvm-application-cnb/executablejar"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 )
 
@@ -43,10 +43,10 @@ func main() {
 func b(build build.Build) (int, error) {
 	build.Logger.FirstLine(build.Logger.PrettyIdentity(build.Buildpack))
 
-	if m, ok, err := mainclass.NewMainClass(build); err != nil {
+	if e, ok, err := executablejar.NewExecutableJAR(build); err != nil {
 		return build.Failure(102), err
 	} else if ok {
-		if err = m.Contribute(); err != nil {
+		if err = e.Contribute(); err != nil {
 			return build.Failure(103), err
 		}
 	}

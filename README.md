@@ -15,8 +15,9 @@ If the build plan contains
 
 * `jvm-application`
   * `<APPLICATION_ROOT>/META-INF/MANIFEST.MF` with `Main-Class` key declared
-    * Contributes `web` process type
+    * Contributes `executable-jar` process type
     * Contributes `task` process type
+    * Contributes `web` process type
 
 ## License
 This buildpack is released under version 2.0 of the [Apache License][a].

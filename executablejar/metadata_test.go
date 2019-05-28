@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main
+package executablejar_test
 
 import (
 	"path/filepath"
@@ -23,7 +23,7 @@ import (
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-cnb/executablejar"
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
-	"github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/cloudfoundry/libcfbuildpack/manifest"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	"github.com/cloudfoundry/openjdk-cnb/jre"
 	. "github.com/onsi/gomega"
@@ -31,8 +31,8 @@ import (
 	"github.com/sclevine/spec/report"
 )
 
-func TestDetect(t *testing.T) {
-	spec.Run(t, "Detect", func(t *testing.T, _ spec.G, it spec.S) {
+func TestMetadata(t *testing.T) {
+	spec.Run(t, "Metadata", func(t *testing.T, when spec.G, it spec.S) {
 
 		g := NewGomegaWithT(t)
 
@@ -42,27 +42,35 @@ func TestDetect(t *testing.T) {
 			f = test.NewDetectFactory(t)
 		})
 
-		it("fails without Main-Class", func() {
-			g.Expect(d(f.Detect)).To(Equal(detect.FailStatusCode))
+		it("returns false if no Main-Class", func() {
+			m, err := manifest.NewManifest(f.Detect.Application, f.Detect.Logger)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			_, ok := executablejar.NewMetadata(m)
+			g.Expect(ok).To(BeFalse())
 		})
 
-		it("passes with jvm-application", func() {
-			f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
+		it("parses Main-Class", func() {
+			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-value")
 
-			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
-			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
-				jvmapplication.Dependency: buildplan.Dependency{},
-				jre.Dependency: buildplan.Dependency{
-					Metadata: buildplan.Metadata{jre.LaunchContribution: true},
-				},
-			}))
+			m, err := manifest.NewManifest(f.Detect.Application, f.Detect.Logger)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			md, ok := executablejar.NewMetadata(m)
+			g.Expect(ok).To(BeTrue())
+
+			g.Expect(md.MainClass).To(Equal("test-value"))
 		})
 
-		it("passes with Main-Class", func() {
+		it("returns build plan entries", func() {
 			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
-			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
-			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
+			m, err := manifest.NewManifest(f.Detect.Application, f.Detect.Logger)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			md, _ := executablejar.NewMetadata(m)
+
+			g.Expect(md.BuildPlan(buildplan.BuildPlan{})).To(Equal(buildplan.BuildPlan{
 				executablejar.Dependency: buildplan.Dependency{
 					Metadata: buildplan.Metadata{executablejar.MainClass: "test-class"},
 				},
