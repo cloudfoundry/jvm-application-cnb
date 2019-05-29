@@ -19,7 +19,7 @@ package executablejar
 import (
 	"fmt"
 
-	"github.com/buildpack/libbuildpack/application"
+	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
@@ -37,22 +37,21 @@ const (
 
 // ExecutableJAR represents the an executable JAR JVM application.
 type ExecutableJAR struct {
-	application application.Application
-	class       string
-	layer       layers.Layer
-	layers      layers.Layers
-	logger      logger.Logger
+	layer    layers.Layer
+	layers   layers.Layers
+	logger   logger.Logger
+	metadata metadata
 }
 
 // Contribute makes the contribution to launch
 func (e ExecutableJAR) Contribute() error {
-	if err := e.layer.Contribute(marker(e.application.Root), func(layer layers.Layer) error {
-		return layer.AppendPathSharedEnv("CLASSPATH", e.application.Root)
+	if err := e.layer.Contribute(e.metadata, func(layer layers.Layer) error {
+		return layer.AppendPathSharedEnv("CLASSPATH", e.metadata.Classpath)
 	}, layers.Build, layers.Cache, layers.Launch); err != nil {
 		return err
 	}
 
-	command := fmt.Sprintf("java -cp $CLASSPATH $JAVA_OPTS %s", e.class)
+	command := fmt.Sprintf("java -cp $CLASSPATH $JAVA_OPTS %s", e.metadata.Class)
 
 	return e.layers.WriteApplicationMetadata(layers.Metadata{
 		Processes: layers.Processes{
@@ -63,10 +62,21 @@ func (e ExecutableJAR) Contribute() error {
 	})
 }
 
+func (e ExecutableJAR) BuildPlan() buildplan.BuildPlan {
+	return buildplan.BuildPlan{
+		Dependency: buildplan.Dependency{
+			Metadata: buildplan.Metadata{
+				"class":     e.metadata.Class,
+				"classpath": e.metadata.Classpath,
+			},
+		},
+	}
+}
+
 // String makes ExecutableJAR satisfy the Stringer interface.
 func (e ExecutableJAR) String() string {
-	return fmt.Sprintf("ExecutableJAR{ application: %s, class:%s, layer: %s, layers: %s, logger: %s }",
-		e.application, e.class, e.layer, e.layers, e.logger)
+	return fmt.Sprintf("ExecutableJAR{ layer: %s, layers: %s, logger: %s, metadata: %s }",
+		e.layer, e.layers, e.logger, e.metadata)
 }
 
 // NewExecutableJAR creates a new ExecutableJAR instance.  OK is true if the build plan contains either a
@@ -104,16 +114,18 @@ func NewExecutableJAR(build build.Build) (ExecutableJAR, bool, error) {
 	}
 
 	return ExecutableJAR{
-		build.Application,
-		class,
 		build.Layers.Layer(Dependency),
 		build.Layers,
 		build.Logger,
+		metadata{class, build.Application.Root},
 	}, true, nil
 }
 
-type marker string
+type metadata struct {
+	Class     string `toml:"class"`
+	Classpath string `toml:"classpath"`
+}
 
-func (m marker) Identity() (string, string) {
-	return "Executable JAR Classpath", ""
+func (metadata) Identity() (string, string) {
+	return "Executable JAR", ""
 }

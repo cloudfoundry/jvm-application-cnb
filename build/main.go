@@ -43,13 +43,17 @@ func main() {
 func b(build build.Build) (int, error) {
 	build.Logger.FirstLine(build.Logger.PrettyIdentity(build.Buildpack))
 
+	bp := buildplan.BuildPlan{}
+
 	if e, ok, err := executablejar.NewExecutableJAR(build); err != nil {
 		return build.Failure(102), err
 	} else if ok {
 		if err = e.Contribute(); err != nil {
 			return build.Failure(103), err
 		}
+
+		bp.Merge(e.BuildPlan())
 	}
 
-	return build.Success(buildplan.BuildPlan{})
+	return build.Success(bp)
 }
