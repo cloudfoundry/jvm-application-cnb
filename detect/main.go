@@ -19,11 +19,13 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 
-	"github.com/cloudfoundry/jvm-application-cnb/executablejar"
+	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
-	"github.com/cloudfoundry/libcfbuildpack/manifest"
+	"github.com/cloudfoundry/libcfbuildpack/helper"
+	"github.com/cloudfoundry/openjdk-cnb/jre"
 )
 
 func main() {
@@ -47,18 +49,28 @@ func main() {
 }
 
 func d(detect detect.Detect) (int, error) {
-	m, err := manifest.NewManifest(detect.Application, detect.Logger)
-	if err != nil {
-		return detect.Error(102), err
-	}
-
-	if e, ok := executablejar.NewMetadata(m); ok {
-		return detect.Pass(e.BuildPlan(detect.BuildPlan))
-	}
-
 	if _, ok := detect.BuildPlan[jvmapplication.Dependency]; ok {
-		return detect.Pass(jvmapplication.Metadata{}.BuildPlan(detect.BuildPlan))
+		return detect.Pass(buildPlan(detect.BuildPlan))
+	}
+
+	if ok, err := helper.HasFile(detect.Application.Root, regexp.MustCompile(".*\\.class$")); err != nil {
+		return detect.Error(102), err
+	} else if ok {
+		return detect.Pass(buildPlan(detect.BuildPlan))
 	}
 
 	return detect.Fail(), nil
+}
+
+func buildPlan(buildPlan buildplan.BuildPlan) buildplan.BuildPlan {
+	j := buildPlan[jre.Dependency]
+	if j.Metadata == nil {
+		j.Metadata = make(buildplan.Metadata)
+	}
+	j.Metadata[jre.LaunchContribution] = true
+
+	return buildplan.BuildPlan{
+		jvmapplication.Dependency: buildPlan[jvmapplication.Dependency],
+		jre.Dependency:            j,
+	}
 }

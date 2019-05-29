@@ -19,53 +19,46 @@ package executablejar
 import (
 	"fmt"
 
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
+	"github.com/buildpack/libbuildpack/application"
+	"github.com/cloudfoundry/libcfbuildpack/logger"
 	"github.com/cloudfoundry/libcfbuildpack/manifest"
 )
 
 // Metadata describes the metadata
 type Metadata struct {
-	jvmapplication.Metadata
+	// Classpath is the classpath of the executable JAR.
+	ClassPath []string `mapstructure:"classpath" properties:",default=" toml:"classpath"`
 
 	// MainClass is the Main-Class of the executable JAR.
-	MainClass string
+	MainClass string `mapstructure:"main-class" properties:"Main-Class,default=" toml:"main-class"`
 }
 
-// BuildPlan returns a BuildPlan that contains all the dependencies of jvmapplication.Metadata as well as
-// executable-jar.
-func (m Metadata) BuildPlan(buildPlan buildplan.BuildPlan) buildplan.BuildPlan {
-	bp := m.Metadata.BuildPlan(buildPlan)
-	bp[Dependency] = m.executableJar(buildPlan)
-	return bp
+func (Metadata) Identity() (string, string) {
+	return "Executable JAR", ""
 }
 
 // String makes Metadata satisfy the Stringer interface.
 func (m Metadata) String() string {
-	return fmt.Sprintf("Metadata{ Metadata: %s, MainClass: %s }", m.Metadata, m.MainClass)
-}
-
-func (m Metadata) executableJar(buildPlan buildplan.BuildPlan) buildplan.Dependency {
-	d := buildPlan[Dependency]
-
-	if d.Metadata == nil {
-		d.Metadata = make(buildplan.Metadata)
-	}
-
-	d.Metadata[MainClass] = m.MainClass
-
-	return d
+	return fmt.Sprintf("Metadata{ ClassPath: %s, MainClass: %s }", m.ClassPath, m.MainClass)
 }
 
 // NewMetadata creates a new Metadata returning false if Main-Class is not defined.
-func NewMetadata(manifest manifest.Manifest) (Metadata, bool) {
-	m, ok := manifest.Get("Main-Class")
-	if !ok {
-		return Metadata{}, false
+func NewMetadata(application application.Application, logger logger.Logger) (Metadata, bool, error) {
+	md := Metadata{}
+
+	m, err := manifest.NewManifest(application, logger)
+	if err != nil {
+		return Metadata{}, false, err
 	}
 
-	return Metadata{
-		jvmapplication.Metadata{},
-		m,
-	}, true
+	if err := m.Decode(&md); err != nil {
+		return Metadata{}, false, err
+	}
+
+	if md.MainClass == "" {
+		return Metadata{}, false, nil
+	}
+
+	md.ClassPath = []string{application.Root}
+	return md, true, nil
 }

@@ -18,21 +18,20 @@ package executablejar
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/logger"
-	"github.com/cloudfoundry/libcfbuildpack/manifest"
+	"github.com/mitchellh/mapstructure"
 )
 
 const (
 	// Dependency indicates that an application is an executable JAR.
 	Dependency = "executable-jar"
-
-	// MainClass indicates the Main-Class of an executable JAR.
-	MainClass = "main-class"
 )
 
 // ExecutableJAR represents the an executable JAR JVM application.
@@ -40,18 +39,18 @@ type ExecutableJAR struct {
 	layer    layers.Layer
 	layers   layers.Layers
 	logger   logger.Logger
-	metadata metadata
+	metadata Metadata
 }
 
 // Contribute makes the contribution to launch
 func (e ExecutableJAR) Contribute() error {
 	if err := e.layer.Contribute(e.metadata, func(layer layers.Layer) error {
-		return layer.AppendPathSharedEnv("CLASSPATH", e.metadata.Classpath)
+		return layer.AppendPathSharedEnv("CLASSPATH", strings.Join(e.metadata.ClassPath, string(filepath.ListSeparator)))
 	}, layers.Build, layers.Cache, layers.Launch); err != nil {
 		return err
 	}
 
-	command := fmt.Sprintf("java -cp $CLASSPATH $JAVA_OPTS %s", e.metadata.Class)
+	command := fmt.Sprintf("java -cp $CLASSPATH $JAVA_OPTS %s", e.metadata.MainClass)
 
 	return e.layers.WriteApplicationMetadata(layers.Metadata{
 		Processes: layers.Processes{
@@ -62,15 +61,14 @@ func (e ExecutableJAR) Contribute() error {
 	})
 }
 
-func (e ExecutableJAR) BuildPlan() buildplan.BuildPlan {
-	return buildplan.BuildPlan{
-		Dependency: buildplan.Dependency{
-			Metadata: buildplan.Metadata{
-				"class":     e.metadata.Class,
-				"classpath": e.metadata.Classpath,
-			},
-		},
+func (e ExecutableJAR) BuildPlan() (buildplan.BuildPlan, error) {
+	md := make(buildplan.Metadata)
+
+	if err := mapstructure.Decode(e.metadata, &md); err != nil {
+		return nil, err
 	}
+
+	return buildplan.BuildPlan{Dependency: buildplan.Dependency{Metadata: md}}, nil
 }
 
 // String makes ExecutableJAR satisfy the Stringer interface.
@@ -87,45 +85,19 @@ func NewExecutableJAR(build build.Build) (ExecutableJAR, bool, error) {
 		return ExecutableJAR{}, false, nil
 	}
 
-	var class string
+	md, ok, err := NewMetadata(build.Application, build.Logger)
+	if err != nil {
+		return ExecutableJAR{}, false, err
+	}
 
-	e, ok := build.BuildPlan[Dependency]
-	if ok {
-		m, ok := e.Metadata[MainClass]
-		if !ok {
-			return ExecutableJAR{}, false, fmt.Errorf("executable-jar dependency must have main-class metadata")
-		}
-
-		if class, ok = m.(string); !ok {
-			return ExecutableJAR{}, false, fmt.Errorf("main-class metadata must be a string")
-		}
-	} else {
-		m, err := manifest.NewManifest(build.Application, build.Logger)
-		if err != nil {
-			return ExecutableJAR{}, false, err
-		}
-
-		md, ok := NewMetadata(m)
-		if !ok {
-			return ExecutableJAR{}, false, nil
-		}
-
-		class = md.MainClass
+	if !ok {
+		return ExecutableJAR{}, false, nil
 	}
 
 	return ExecutableJAR{
 		build.Layers.Layer(Dependency),
 		build.Layers,
 		build.Logger,
-		metadata{class, build.Application.Root},
+		md,
 	}, true, nil
-}
-
-type metadata struct {
-	Class     string `toml:"class"`
-	Classpath string `toml:"classpath"`
-}
-
-func (metadata) Identity() (string, string) {
-	return "Executable JAR", ""
 }

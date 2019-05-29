@@ -17,11 +17,9 @@
 package main
 
 import (
-	"path/filepath"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/jvm-application-cnb/executablejar"
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/test"
@@ -42,7 +40,7 @@ func TestDetect(t *testing.T) {
 			f = test.NewDetectFactory(t)
 		})
 
-		it("fails without Main-Class", func() {
+		it("fails without jvm-application or classes", func() {
 			g.Expect(d(f.Detect)).To(Equal(detect.FailStatusCode))
 		})
 
@@ -58,14 +56,11 @@ func TestDetect(t *testing.T) {
 			}))
 		})
 
-		it("passes with Main-Class", func() {
-			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
+		it("passes with classes", func() {
+			test.TouchFile(t, f.Detect.Application.Root, "test.class")
 
 			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
 			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
-				executablejar.Dependency: buildplan.Dependency{
-					Metadata: buildplan.Metadata{executablejar.MainClass: "test-class"},
-				},
 				jvmapplication.Dependency: buildplan.Dependency{},
 				jre.Dependency: buildplan.Dependency{
 					Metadata: buildplan.Metadata{jre.LaunchContribution: true},

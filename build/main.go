@@ -52,7 +52,12 @@ func b(build build.Build) (int, error) {
 			return build.Failure(103), err
 		}
 
-		bp.Merge(e.BuildPlan())
+		b, err := e.BuildPlan()
+		if err != nil {
+			return build.Failure(103), err
+		}
+
+		bp.Merge(b)
 	}
 
 	return build.Success(bp)

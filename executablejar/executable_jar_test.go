@@ -51,17 +51,6 @@ func TestExecutableJAR(t *testing.T) {
 				g.Expect(err).NotTo(HaveOccurred())
 			})
 
-			it("returns true with executable-jar dependency", func() {
-				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
-				f.AddBuildPlan(executablejar.Dependency, buildplan.Dependency{
-					Metadata: buildplan.Metadata{executablejar.MainClass: "test-class"},
-				})
-
-				_, ok, err := executablejar.NewExecutableJAR(f.Build)
-				g.Expect(ok).To(BeTrue())
-				g.Expect(err).NotTo(HaveOccurred())
-			})
-
 			it("returns false when no Main-Class", func() {
 				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
 				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "")
@@ -71,7 +60,7 @@ func TestExecutableJAR(t *testing.T) {
 				g.Expect(err).NotTo(HaveOccurred())
 			})
 
-			it("returns true when main-Class exists", func() {
+			it("returns true when Cain-Class exists", func() {
 				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
 				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
@@ -83,11 +72,10 @@ func TestExecutableJAR(t *testing.T) {
 
 		it("contributes command", func() {
 			f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
-			f.AddBuildPlan(executablejar.Dependency, buildplan.Dependency{
-				Metadata: buildplan.Metadata{executablejar.MainClass: "test-class"},
-			})
+			test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
-			e, _, err := executablejar.NewExecutableJAR(f.Build)
+			e, ok, err := executablejar.NewExecutableJAR(f.Build)
+			g.Expect(ok).To(BeTrue())
 			g.Expect(err).NotTo(HaveOccurred())
 
 			g.Expect(e.Contribute()).To(Succeed())
