@@ -25,20 +25,16 @@ import (
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
-	"github.com/cloudfoundry/libcfbuildpack/logger"
 	"github.com/mitchellh/mapstructure"
 )
 
-const (
-	// Dependency indicates that an application is an executable JAR.
-	Dependency = "executable-jar"
-)
+// Dependency indicates that an application is an executable JAR.
+const Dependency = "executable-jar"
 
-// ExecutableJAR represents the an executable JAR JVM application.
+// ExecutableJAR represents an executable JAR JVM application.
 type ExecutableJAR struct {
 	layer    layers.Layer
 	layers   layers.Layers
-	logger   logger.Logger
 	metadata Metadata
 }
 
@@ -61,6 +57,7 @@ func (e ExecutableJAR) Contribute() error {
 	})
 }
 
+// BuildPlan returns the dependency information for this application.
 func (e ExecutableJAR) BuildPlan() (buildplan.BuildPlan, error) {
 	md := make(buildplan.Metadata)
 
@@ -73,12 +70,12 @@ func (e ExecutableJAR) BuildPlan() (buildplan.BuildPlan, error) {
 
 // String makes ExecutableJAR satisfy the Stringer interface.
 func (e ExecutableJAR) String() string {
-	return fmt.Sprintf("ExecutableJAR{ layer: %s, layers: %s, logger: %s, metadata: %s }",
-		e.layer, e.layers, e.logger, e.metadata)
+	return fmt.Sprintf("ExecutableJAR{ layer: %s, layers: %s, metadata: %s }",
+		e.layer, e.layers, e.metadata)
 }
 
-// NewExecutableJAR creates a new ExecutableJAR instance.  OK is true if the build plan contains either a
-// "executable-jar" dependency or a "jvm-application" dependency and a "Main-Class" manifest key.
+// NewExecutableJAR creates a new ExecutableJAR instance.  OK is true if the build plan contains a "jvm-application"
+// dependency and a "Main-Class" manifest key.
 func NewExecutableJAR(build build.Build) (ExecutableJAR, bool, error) {
 	_, ok := build.BuildPlan[jvmapplication.Dependency]
 	if !ok {
@@ -97,7 +94,6 @@ func NewExecutableJAR(build build.Build) (ExecutableJAR, bool, error) {
 	return ExecutableJAR{
 		build.Layers.Layer(Dependency),
 		build.Layers,
-		build.Logger,
 		md,
 	}, true, nil
 }

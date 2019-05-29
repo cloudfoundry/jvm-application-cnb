@@ -44,14 +44,18 @@ func TestMetadata(t *testing.T) {
 			g.Expect(err).NotTo(HaveOccurred())
 		})
 
-		it("parses Main-Class", func() {
-			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-value")
+		it("parses manifest", func() {
+			test.WriteFile(t, filepath.Join(f.Detect.Application.Root, "META-INF", "MANIFEST.MF"),
+				"Main-Class: test-main-class")
 
 			md, ok, err := executablejar.NewMetadata(f.Detect.Application, f.Detect.Logger)
 			g.Expect(ok).To(BeTrue())
 			g.Expect(err).NotTo(HaveOccurred())
 
-			g.Expect(md.MainClass).To(Equal("test-value"))
+			g.Expect(md).To(Equal(executablejar.Metadata{
+				ClassPath: []string{f.Detect.Application.Root},
+				MainClass: "test-main-class",
+			}))
 		})
 	}, spec.Report(report.Terminal{}))
 }

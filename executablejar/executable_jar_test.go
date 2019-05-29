@@ -60,7 +60,7 @@ func TestExecutableJAR(t *testing.T) {
 				g.Expect(err).NotTo(HaveOccurred())
 			})
 
-			it("returns true when Cain-Class exists", func() {
+			it("returns true when Main-Class exists", func() {
 				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
 				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
