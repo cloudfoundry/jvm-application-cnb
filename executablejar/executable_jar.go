@@ -33,20 +33,22 @@ const Dependency = "executable-jar"
 
 // ExecutableJAR represents an executable JAR JVM application.
 type ExecutableJAR struct {
-	layer    layers.Layer
-	layers   layers.Layers
-	metadata Metadata
+	// Metadata is metadata about the executable JAR application.
+	Metadata Metadata
+
+	layer  layers.Layer
+	layers layers.Layers
 }
 
 // Contribute makes the contribution to launch
 func (e ExecutableJAR) Contribute() error {
-	if err := e.layer.Contribute(e.metadata, func(layer layers.Layer) error {
-		return layer.AppendPathSharedEnv("CLASSPATH", strings.Join(e.metadata.ClassPath, string(filepath.ListSeparator)))
+	if err := e.layer.Contribute(e.Metadata, func(layer layers.Layer) error {
+		return layer.AppendPathSharedEnv("CLASSPATH", strings.Join(e.Metadata.ClassPath, string(filepath.ListSeparator)))
 	}, layers.Build, layers.Cache, layers.Launch); err != nil {
 		return err
 	}
 
-	command := fmt.Sprintf("java -cp $CLASSPATH $JAVA_OPTS %s", e.metadata.MainClass)
+	command := fmt.Sprintf("java -cp $CLASSPATH $JAVA_OPTS %s", e.Metadata.MainClass)
 
 	return e.layers.WriteApplicationMetadata(layers.Metadata{
 		Processes: layers.Processes{
@@ -61,7 +63,7 @@ func (e ExecutableJAR) Contribute() error {
 func (e ExecutableJAR) BuildPlan() (buildplan.BuildPlan, error) {
 	md := make(buildplan.Metadata)
 
-	if err := mapstructure.Decode(e.metadata, &md); err != nil {
+	if err := mapstructure.Decode(e.Metadata, &md); err != nil {
 		return nil, err
 	}
 
@@ -70,8 +72,7 @@ func (e ExecutableJAR) BuildPlan() (buildplan.BuildPlan, error) {
 
 // String makes ExecutableJAR satisfy the Stringer interface.
 func (e ExecutableJAR) String() string {
-	return fmt.Sprintf("ExecutableJAR{ layer: %s, layers: %s, metadata: %s }",
-		e.layer, e.layers, e.metadata)
+	return fmt.Sprintf("ExecutableJAR{ Metadata: %s, layer: %s, layers: %s }", e.Metadata, e.layer, e.layers)
 }
 
 // NewExecutableJAR creates a new ExecutableJAR instance.  OK is true if the build plan contains a "jvm-application"
@@ -92,8 +93,8 @@ func NewExecutableJAR(build build.Build) (ExecutableJAR, bool, error) {
 	}
 
 	return ExecutableJAR{
+		md,
 		build.Layers.Layer(Dependency),
 		build.Layers,
-		md,
 	}, true, nil
 }
