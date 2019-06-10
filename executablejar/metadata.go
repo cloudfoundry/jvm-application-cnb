@@ -17,8 +17,6 @@
 package executablejar
 
 import (
-	"fmt"
-
 	"github.com/buildpack/libbuildpack/application"
 	"github.com/cloudfoundry/libcfbuildpack/logger"
 	"github.com/cloudfoundry/libcfbuildpack/manifest"
@@ -35,11 +33,6 @@ type Metadata struct {
 
 func (Metadata) Identity() (string, string) {
 	return "Executable JAR", ""
-}
-
-// String makes Metadata satisfy the Stringer interface.
-func (m Metadata) String() string {
-	return fmt.Sprintf("Metadata{ ClassPath: %s, MainClass: %s }", m.ClassPath, m.MainClass)
 }
 
 // NewMetadata creates a new Metadata returning false if Main-Class is not defined.

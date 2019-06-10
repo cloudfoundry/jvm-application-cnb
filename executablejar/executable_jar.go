@@ -70,11 +70,6 @@ func (e ExecutableJAR) BuildPlan() (buildplan.BuildPlan, error) {
 	return buildplan.BuildPlan{Dependency: buildplan.Dependency{Metadata: md}}, nil
 }
 
-// String makes ExecutableJAR satisfy the Stringer interface.
-func (e ExecutableJAR) String() string {
-	return fmt.Sprintf("ExecutableJAR{ Metadata: %s, layer: %s, layers: %s }", e.Metadata, e.layer, e.layers)
-}
-
 // NewExecutableJAR creates a new ExecutableJAR instance.  OK is true if the build plan contains a "jvm-application"
 // dependency and a "Main-Class" manifest key.
 func NewExecutableJAR(build build.Build) (ExecutableJAR, bool, error) {
