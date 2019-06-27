@@ -53,7 +53,7 @@ func d(detect detect.Detect) (int, error) {
 		return detect.Pass(buildPlan(detect.BuildPlan))
 	}
 
-	if ok, err := helper.HasFile(detect.Application.Root, regexp.MustCompile(".*\\.class$")); err != nil {
+	if ok, err := helper.HasFile(detect.Application.Root, regexp.MustCompile(`.+\.class$|.+\.groovy$`)); err != nil {
 		return detect.Error(102), err
 	} else if ok {
 		return detect.Pass(buildPlan(detect.BuildPlan))

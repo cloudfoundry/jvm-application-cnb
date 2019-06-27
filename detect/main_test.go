@@ -67,5 +67,17 @@ func TestDetect(t *testing.T) {
 				},
 			}))
 		})
+
+		it("passes with groovies", func() {
+			test.TouchFile(t, f.Detect.Application.Root, "test.groovy")
+
+			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
+			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
+				jvmapplication.Dependency: buildplan.Dependency{},
+				jre.Dependency: buildplan.Dependency{
+					Metadata: buildplan.Metadata{jre.LaunchContribution: true},
+				},
+			}))
+		})
 	}, spec.Report(report.Terminal{}))
 }
