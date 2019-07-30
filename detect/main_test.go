@@ -24,7 +24,7 @@ import (
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	"github.com/cloudfoundry/openjdk-cnb/jre"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -32,7 +32,7 @@ import (
 func TestDetect(t *testing.T) {
 	spec.Run(t, "Detect", func(t *testing.T, _ spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		var f *test.DetectFactory
 
@@ -41,14 +41,14 @@ func TestDetect(t *testing.T) {
 		})
 
 		it("fails without jvm-application or classes", func() {
-			g.Expect(d(f.Detect)).To(Equal(detect.FailStatusCode))
+			g.Expect(d(f.Detect)).To(gomega.Equal(detect.FailStatusCode))
 		})
 
 		it("passes with jvm-application", func() {
 			f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
 
-			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
-			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
+			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
+			g.Expect(f.Output).To(gomega.Equal(buildplan.BuildPlan{
 				jvmapplication.Dependency: buildplan.Dependency{},
 				jre.Dependency: buildplan.Dependency{
 					Metadata: buildplan.Metadata{jre.LaunchContribution: true},
@@ -59,8 +59,8 @@ func TestDetect(t *testing.T) {
 		it("passes with classes", func() {
 			test.TouchFile(t, f.Detect.Application.Root, "test.class")
 
-			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
-			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
+			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
+			g.Expect(f.Output).To(gomega.Equal(buildplan.BuildPlan{
 				jvmapplication.Dependency: buildplan.Dependency{},
 				jre.Dependency: buildplan.Dependency{
 					Metadata: buildplan.Metadata{jre.LaunchContribution: true},
@@ -71,8 +71,8 @@ func TestDetect(t *testing.T) {
 		it("passes with groovies", func() {
 			test.TouchFile(t, f.Detect.Application.Root, "test.groovy")
 
-			g.Expect(d(f.Detect)).To(Equal(detect.PassStatusCode))
-			g.Expect(f.Output).To(Equal(buildplan.BuildPlan{
+			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
+			g.Expect(f.Output).To(gomega.Equal(buildplan.BuildPlan{
 				jvmapplication.Dependency: buildplan.Dependency{},
 				jre.Dependency: buildplan.Dependency{
 					Metadata: buildplan.Metadata{jre.LaunchContribution: true},

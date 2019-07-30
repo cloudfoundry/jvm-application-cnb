@@ -25,7 +25,7 @@ import (
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -33,7 +33,7 @@ import (
 func TestExecutableJAR(t *testing.T) {
 	spec.Run(t, "ExecutableJAR", func(t *testing.T, when spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		var f *test.BuildFactory
 
@@ -47,8 +47,8 @@ func TestExecutableJAR(t *testing.T) {
 				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
 				_, ok, err := executablejar.NewExecutableJAR(f.Build)
-				g.Expect(ok).To(BeFalse())
-				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(ok).To(gomega.BeFalse())
+				g.Expect(err).NotTo(gomega.HaveOccurred())
 			})
 
 			it("returns false when no Main-Class", func() {
@@ -56,8 +56,8 @@ func TestExecutableJAR(t *testing.T) {
 				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "")
 
 				_, ok, err := executablejar.NewExecutableJAR(f.Build)
-				g.Expect(ok).To(BeFalse())
-				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(ok).To(gomega.BeFalse())
+				g.Expect(err).NotTo(gomega.HaveOccurred())
 			})
 
 			it("returns true when Main-Class exists", func() {
@@ -65,8 +65,8 @@ func TestExecutableJAR(t *testing.T) {
 				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
 				_, ok, err := executablejar.NewExecutableJAR(f.Build)
-				g.Expect(ok).To(BeTrue())
-				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(ok).To(gomega.BeTrue())
+				g.Expect(err).NotTo(gomega.HaveOccurred())
 			})
 		})
 
@@ -75,10 +75,10 @@ func TestExecutableJAR(t *testing.T) {
 			test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
 			e, ok, err := executablejar.NewExecutableJAR(f.Build)
-			g.Expect(ok).To(BeTrue())
-			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(ok).To(gomega.BeTrue())
+			g.Expect(err).NotTo(gomega.HaveOccurred())
 
-			g.Expect(e.Contribute()).To(Succeed())
+			g.Expect(e.Contribute()).To(gomega.Succeed())
 
 			layer := f.Build.Layers.Layer("executable-jar")
 			g.Expect(layer).To(test.HaveLayerMetadata(true, true, true))
