@@ -40,42 +40,65 @@ func TestDetect(t *testing.T) {
 			f = test.NewDetectFactory(t)
 		})
 
-		it("fails without jvm-application or classes", func() {
-			g.Expect(d(f.Detect)).To(gomega.Equal(detect.FailStatusCode))
-		})
-
-		it("passes with jvm-application", func() {
-			f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
-
+		it("indeterminant", func() {
 			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
-			g.Expect(f.Output).To(gomega.Equal(buildplan.BuildPlan{
-				jvmapplication.Dependency: buildplan.Dependency{},
-				jre.Dependency: buildplan.Dependency{
-					Metadata: buildplan.Metadata{jre.LaunchContribution: true},
+			g.Expect(f.Plans).To(gomega.Equal(buildplan.Plans{
+				Plan: buildplan.Plan{
+					Requires: []buildplan.Required{
+						{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+						{Name: jvmapplication.Dependency},
+					},
 				},
 			}))
 		})
 
-		it("passes with classes", func() {
+		it("classes", func() {
 			test.TouchFile(t, f.Detect.Application.Root, "test.class")
 
 			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
-			g.Expect(f.Output).To(gomega.Equal(buildplan.BuildPlan{
-				jvmapplication.Dependency: buildplan.Dependency{},
-				jre.Dependency: buildplan.Dependency{
-					Metadata: buildplan.Metadata{jre.LaunchContribution: true},
+			g.Expect(f.Plans).To(gomega.Equal(buildplan.Plans{
+				Plan: buildplan.Plan{
+					Provides: []buildplan.Provided{
+						{Name: jvmapplication.Dependency},
+					},
+					Requires: []buildplan.Required{
+						{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+						{Name: jvmapplication.Dependency},
+					},
 				},
 			}))
 		})
 
-		it("passes with groovies", func() {
+		it("groovies", func() {
 			test.TouchFile(t, f.Detect.Application.Root, "test.groovy")
 
 			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
-			g.Expect(f.Output).To(gomega.Equal(buildplan.BuildPlan{
-				jvmapplication.Dependency: buildplan.Dependency{},
-				jre.Dependency: buildplan.Dependency{
-					Metadata: buildplan.Metadata{jre.LaunchContribution: true},
+			g.Expect(f.Plans).To(gomega.Equal(buildplan.Plans{
+				Plan: buildplan.Plan{
+					Provides: []buildplan.Provided{
+						{Name: jvmapplication.Dependency},
+					},
+					Requires: []buildplan.Required{
+						{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+						{Name: jvmapplication.Dependency},
+					},
+				},
+			}))
+		})
+
+		it("jars", func() {
+			test.TouchFile(t, f.Detect.Application.Root, "test.jar")
+
+			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
+			g.Expect(f.Plans).To(gomega.Equal(buildplan.Plans{
+				Plan: buildplan.Plan{
+					Provides: []buildplan.Provided{
+						{Name: jvmapplication.Dependency},
+					},
+					Requires: []buildplan.Required{
+						{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+						{Name: jvmapplication.Dependency},
+					},
 				},
 			}))
 		})

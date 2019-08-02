@@ -20,9 +20,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-cnb/executablejar"
-	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	"github.com/onsi/gomega"
@@ -43,16 +41,7 @@ func TestExecutableJAR(t *testing.T) {
 
 		when("NewExecutableJAR", func() {
 
-			it("returns false when no jvm-application", func() {
-				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
-
-				_, ok, err := executablejar.NewExecutableJAR(f.Build)
-				g.Expect(ok).To(gomega.BeFalse())
-				g.Expect(err).NotTo(gomega.HaveOccurred())
-			})
-
 			it("returns false when no Main-Class", func() {
-				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
 				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "")
 
 				_, ok, err := executablejar.NewExecutableJAR(f.Build)
@@ -61,7 +50,6 @@ func TestExecutableJAR(t *testing.T) {
 			})
 
 			it("returns true when Main-Class exists", func() {
-				f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
 				test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
 				_, ok, err := executablejar.NewExecutableJAR(f.Build)
@@ -71,7 +59,6 @@ func TestExecutableJAR(t *testing.T) {
 		})
 
 		it("contributes command", func() {
-			f.AddBuildPlan(jvmapplication.Dependency, buildplan.Dependency{})
 			test.WriteFile(t, filepath.Join(f.Build.Application.Root, "META-INF", "MANIFEST.MF"), "Main-Class: test-class")
 
 			e, ok, err := executablejar.NewExecutableJAR(f.Build)

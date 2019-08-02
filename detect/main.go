@@ -35,11 +35,6 @@ func main() {
 		os.Exit(101)
 	}
 
-	if err := detect.BuildPlan.Init(); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize Build Plan: %s\n", err)
-		os.Exit(101)
-	}
-
 	if code, err := d(detect); err != nil {
 		detect.Logger.Info(err.Error())
 		os.Exit(code)
@@ -49,28 +44,18 @@ func main() {
 }
 
 func d(detect detect.Detect) (int, error) {
-	if _, ok := detect.BuildPlan[jvmapplication.Dependency]; ok {
-		return detect.Pass(buildPlan(detect.BuildPlan))
+	p := buildplan.Plan{
+		Requires: []buildplan.Required{
+			{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+			{Name: jvmapplication.Dependency},
+		},
 	}
 
-	if ok, err := helper.HasFile(detect.Application.Root, regexp.MustCompile(`.+\.class$|.+\.groovy$`)); err != nil {
+	if ok, err := helper.HasFile(detect.Application.Root, regexp.MustCompile(`.+\.class$|.+\.groovy$|.+\.jar$`)); err != nil {
 		return detect.Error(102), err
 	} else if ok {
-		return detect.Pass(buildPlan(detect.BuildPlan))
+		p.Provides = append(p.Provides, buildplan.Provided{Name: jvmapplication.Dependency})
 	}
 
-	return detect.Fail(), nil
-}
-
-func buildPlan(buildPlan buildplan.BuildPlan) buildplan.BuildPlan {
-	j := buildPlan[jre.Dependency]
-	if j.Metadata == nil {
-		j.Metadata = make(buildplan.Metadata)
-	}
-	j.Metadata[jre.LaunchContribution] = true
-
-	return buildplan.BuildPlan{
-		jvmapplication.Dependency: buildPlan[jvmapplication.Dependency],
-		jre.Dependency:            j,
-	}
+	return detect.Pass(p)
 }

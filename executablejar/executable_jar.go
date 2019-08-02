@@ -21,9 +21,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/mitchellh/mapstructure"
 )
@@ -59,25 +58,23 @@ func (e ExecutableJAR) Contribute() error {
 	})
 }
 
-// BuildPlan returns the dependency information for this application.
-func (e ExecutableJAR) BuildPlan() (buildplan.BuildPlan, error) {
-	md := make(buildplan.Metadata)
-
-	if err := mapstructure.Decode(e.Metadata, &md); err != nil {
-		return nil, err
+// Plan returns the dependency information for this application.
+func (e ExecutableJAR) Plan() (buildpackplan.Plan, error) {
+	p := buildpackplan.Plan{
+		Name:     Dependency,
+		Metadata: make(buildpackplan.Metadata),
 	}
 
-	return buildplan.BuildPlan{Dependency: buildplan.Dependency{Metadata: md}}, nil
+	if err := mapstructure.Decode(e.Metadata, &p.Metadata); err != nil {
+		return buildpackplan.Plan{}, err
+	}
+
+	return p, nil
 }
 
 // NewExecutableJAR creates a new ExecutableJAR instance.  OK is true if the build plan contains a "jvm-application"
 // dependency and a "Main-Class" manifest key.
 func NewExecutableJAR(build build.Build) (ExecutableJAR, bool, error) {
-	_, ok := build.BuildPlan[jvmapplication.Dependency]
-	if !ok {
-		return ExecutableJAR{}, false, nil
-	}
-
 	md, ok, err := NewMetadata(build.Application, build.Logger)
 	if err != nil {
 		return ExecutableJAR{}, false, err
