@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/jvm-application-cnb/executablejar"
 	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 )
 
 func main() {
@@ -41,7 +41,7 @@ func main() {
 }
 
 func b(build build.Build) (int, error) {
-	bp := buildplan.BuildPlan{}
+	var ps []buildpackplan.Plan
 
 	if e, ok, err := executablejar.NewExecutableJAR(build); err != nil {
 		return build.Failure(102), err
@@ -52,13 +52,12 @@ func b(build build.Build) (int, error) {
 			return build.Failure(103), err
 		}
 
-		b, err := e.BuildPlan()
-		if err != nil {
+		if p, err := e.Plan(); err != nil {
 			return build.Failure(103), err
+		} else {
+			ps = append(ps, p)
 		}
-
-		bp.Merge(b)
 	}
 
-	return build.Success(bp)
+	return build.Success(ps...)
 }
