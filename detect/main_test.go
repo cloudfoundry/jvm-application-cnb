@@ -42,12 +42,10 @@ func TestDetect(t *testing.T) {
 
 		it("indeterminant", func() {
 			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
-			g.Expect(f.Plans).To(gomega.Equal(buildplan.Plans{
-				Plan: buildplan.Plan{
-					Requires: []buildplan.Required{
-						{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
-						{Name: jvmapplication.Dependency},
-					},
+			g.Expect(f.Plans).To(test.HavePlans(buildplan.Plan{
+				Requires: []buildplan.Required{
+					{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+					{Name: jvmapplication.Dependency},
 				},
 			}))
 		})
@@ -56,15 +54,13 @@ func TestDetect(t *testing.T) {
 			test.TouchFile(t, f.Detect.Application.Root, "test.class")
 
 			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
-			g.Expect(f.Plans).To(gomega.Equal(buildplan.Plans{
-				Plan: buildplan.Plan{
-					Provides: []buildplan.Provided{
-						{Name: jvmapplication.Dependency},
-					},
-					Requires: []buildplan.Required{
-						{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
-						{Name: jvmapplication.Dependency},
-					},
+			g.Expect(f.Plans).To(test.HavePlans(buildplan.Plan{
+				Provides: []buildplan.Provided{
+					{Name: jvmapplication.Dependency},
+				},
+				Requires: []buildplan.Required{
+					{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+					{Name: jvmapplication.Dependency},
 				},
 			}))
 		})
@@ -73,15 +69,13 @@ func TestDetect(t *testing.T) {
 			test.TouchFile(t, f.Detect.Application.Root, "test.groovy")
 
 			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
-			g.Expect(f.Plans).To(gomega.Equal(buildplan.Plans{
-				Plan: buildplan.Plan{
-					Provides: []buildplan.Provided{
-						{Name: jvmapplication.Dependency},
-					},
-					Requires: []buildplan.Required{
-						{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
-						{Name: jvmapplication.Dependency},
-					},
+			g.Expect(f.Plans).To(test.HavePlans(buildplan.Plan{
+				Provides: []buildplan.Provided{
+					{Name: jvmapplication.Dependency},
+				},
+				Requires: []buildplan.Required{
+					{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+					{Name: jvmapplication.Dependency},
 				},
 			}))
 		})
@@ -90,15 +84,13 @@ func TestDetect(t *testing.T) {
 			test.TouchFile(t, f.Detect.Application.Root, "test.jar")
 
 			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
-			g.Expect(f.Plans).To(gomega.Equal(buildplan.Plans{
-				Plan: buildplan.Plan{
-					Provides: []buildplan.Provided{
-						{Name: jvmapplication.Dependency},
-					},
-					Requires: []buildplan.Required{
-						{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
-						{Name: jvmapplication.Dependency},
-					},
+			g.Expect(f.Plans).To(test.HavePlans(buildplan.Plan{
+				Provides: []buildplan.Provided{
+					{Name: jvmapplication.Dependency},
+				},
+				Requires: []buildplan.Required{
+					{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+					{Name: jvmapplication.Dependency},
 				},
 			}))
 		})
