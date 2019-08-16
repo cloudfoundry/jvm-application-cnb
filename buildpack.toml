@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+api = "0.2"
+
 [buildpack]
-id = "org.cloudfoundry.jvmapplication"
-name = "Cloud Foundry JVM Application Buildpack"
+id      = "org.cloudfoundry.jvmapplication"
+name    = "Cloud Foundry JVM Application Buildpack"
 version = "1.0.0-BUILD-SNAPSHOT"
 
 [[stacks]]
@@ -24,7 +26,7 @@ id = "io.buildpacks.stacks.bionic"
 id = "org.cloudfoundry.stacks.cflinuxfs3"
 
 [metadata]
-pre_package = "ci/build.sh"
+pre_package   = "ci/build.sh"
 include_files = [
   "LICENSE",
   "NOTICE",
