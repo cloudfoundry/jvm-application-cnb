@@ -51,9 +51,9 @@ func (e ExecutableJAR) Contribute() error {
 
 	return e.layers.WriteApplicationMetadata(layers.Metadata{
 		Processes: layers.Processes{
-			{"executable-jar", command},
-			{"task", command},
-			{"web", command},
+			{Type: "executable-jar", Command: command},
+			{Type: "task", Command: command},
+			{Type: "web", Command: command},
 		},
 	})
 }

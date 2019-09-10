@@ -74,9 +74,9 @@ func TestExecutableJAR(t *testing.T) {
 			command := "java -cp $CLASSPATH $JAVA_OPTS test-class"
 			g.Expect(f.Build.Layers).To(test.HaveApplicationMetadata(layers.Metadata{
 				Processes: []layers.Process{
-					{"executable-jar", command},
-					{"task", command},
-					{"web", command},
+					{Type: "executable-jar", Command: command},
+					{Type: "task", Command: command},
+					{Type: "web", Command: command},
 				},
 			}))
 		})
