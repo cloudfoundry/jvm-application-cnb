@@ -69,7 +69,7 @@ func TestExecutableJAR(t *testing.T) {
 
 			layer := f.Build.Layers.Layer("executable-jar")
 			g.Expect(layer).To(test.HaveLayerMetadata(true, true, true))
-			g.Expect(layer).To(test.HaveAppendPathSharedEnvironment("CLASSPATH", f.Build.Application.Root))
+			g.Expect(layer).To(test.HavePrependPathSharedEnvironment("CLASSPATH", f.Build.Application.Root))
 
 			command := "java -cp $CLASSPATH $JAVA_OPTS test-class"
 			g.Expect(f.Build.Layers).To(test.HaveApplicationMetadata(layers.Metadata{

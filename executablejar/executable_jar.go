@@ -42,7 +42,7 @@ type ExecutableJAR struct {
 // Contribute makes the contribution to launch.
 func (e ExecutableJAR) Contribute() error {
 	if err := e.layer.Contribute(e.Metadata, func(layer layers.Layer) error {
-		return layer.AppendPathSharedEnv("CLASSPATH", strings.Join(e.Metadata.ClassPath, string(filepath.ListSeparator)))
+		return layer.PrependPathSharedEnv("CLASSPATH", strings.Join(e.Metadata.ClassPath, string(filepath.ListSeparator)))
 	}, layers.Build, layers.Cache, layers.Launch); err != nil {
 		return err
 	}
