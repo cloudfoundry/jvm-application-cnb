@@ -26,8 +26,8 @@ github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMn
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudfoundry/libcfbuildpack v1.91.22 h1:p7s8VyhcrDc3d0gAmzsDGoogyegNwp6d+UOfL7nGyE4=
 github.com/cloudfoundry/libcfbuildpack v1.91.22/go.mod h1:cEdi3DdqBruJMcaUw4MmP0iplOQeh7H4lcD3FtpqmOo=
-github.com/cloudfoundry/openjdk-cnb v1.0.89 h1:e8KPd7AO3hXpF/rH42SA94paCaTx9rh1BNHMMcEOGEg=
-github.com/cloudfoundry/openjdk-cnb v1.0.89/go.mod h1:5T0GTLQ9xf+tCxOr7BrUesZkRhqA/KUMt13DgjAdxyo=
+github.com/cloudfoundry/openjdk-cnb v1.0.90 h1:2GqQ+nwnVlo7EkL6GzNNzQ682QcnMPULu1i3JUdmXZ8=
+github.com/cloudfoundry/openjdk-cnb v1.0.90/go.mod h1:5T0GTLQ9xf+tCxOr7BrUesZkRhqA/KUMt13DgjAdxyo=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
