@@ -25,7 +25,6 @@ import (
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/helper"
-	"github.com/cloudfoundry/openjdk-cnb/jre"
 )
 
 func main() {
@@ -46,7 +45,7 @@ func main() {
 func d(detect detect.Detect) (int, error) {
 	p := buildplan.Plan{
 		Requires: []buildplan.Required{
-			{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+			{Name: "openjdk-jre", Metadata: buildplan.Metadata{"launch": true}},
 			{Name: jvmapplication.Dependency},
 		},
 	}

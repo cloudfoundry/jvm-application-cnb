@@ -23,7 +23,6 @@ import (
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/test"
-	"github.com/cloudfoundry/openjdk-cnb/jre"
 	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
@@ -44,7 +43,7 @@ func TestDetect(t *testing.T) {
 			g.Expect(d(f.Detect)).To(gomega.Equal(detect.PassStatusCode))
 			g.Expect(f.Plans).To(test.HavePlans(buildplan.Plan{
 				Requires: []buildplan.Required{
-					{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+					{Name: "openjdk-jre", Metadata: buildplan.Metadata{"launch": true}},
 					{Name: jvmapplication.Dependency},
 				},
 			}))
@@ -59,7 +58,7 @@ func TestDetect(t *testing.T) {
 					{Name: jvmapplication.Dependency},
 				},
 				Requires: []buildplan.Required{
-					{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+					{Name: "openjdk-jre", Metadata: buildplan.Metadata{"launch": true}},
 					{Name: jvmapplication.Dependency},
 				},
 			}))
@@ -74,7 +73,7 @@ func TestDetect(t *testing.T) {
 					{Name: jvmapplication.Dependency},
 				},
 				Requires: []buildplan.Required{
-					{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+					{Name: "openjdk-jre", Metadata: buildplan.Metadata{"launch": true}},
 					{Name: jvmapplication.Dependency},
 				},
 			}))
@@ -89,7 +88,7 @@ func TestDetect(t *testing.T) {
 					{Name: jvmapplication.Dependency},
 				},
 				Requires: []buildplan.Required{
-					{Name: jre.Dependency, Metadata: buildplan.Metadata{jre.LaunchContribution: true}},
+					{Name: "openjdk-jre", Metadata: buildplan.Metadata{"launch": true}},
 					{Name: jvmapplication.Dependency},
 				},
 			}))
