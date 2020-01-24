@@ -17,9 +17,9 @@
 package executablejar
 
 import (
-	"github.com/buildpack/libbuildpack/application"
-	"github.com/cloudfoundry/libcfbuildpack/logger"
-	"github.com/cloudfoundry/libcfbuildpack/manifest"
+	"github.com/buildpacks/libbuildpack/v2/application"
+	"github.com/cloudfoundry/libcfbuildpack/v2/logger"
+	"github.com/cloudfoundry/libcfbuildpack/v2/manifest"
 )
 
 // Metadata describes the metadata

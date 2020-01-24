@@ -21,8 +21,8 @@ import (
 	"os"
 
 	"github.com/cloudfoundry/jvm-application-cnb/executablejar"
-	"github.com/cloudfoundry/libcfbuildpack/build"
-	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
+	"github.com/cloudfoundry/libcfbuildpack/v2/build"
+	"github.com/cloudfoundry/libcfbuildpack/v2/buildpackplan"
 )
 
 func main() {

@@ -19,10 +19,10 @@ package main
 import (
 	"testing"
 
-	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/buildpacks/libbuildpack/v2/buildplan"
 	"github.com/cloudfoundry/jvm-application-cnb/jvmapplication"
-	"github.com/cloudfoundry/libcfbuildpack/detect"
-	"github.com/cloudfoundry/libcfbuildpack/test"
+	"github.com/cloudfoundry/libcfbuildpack/v2/detect"
+	"github.com/cloudfoundry/libcfbuildpack/v2/test"
 	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
